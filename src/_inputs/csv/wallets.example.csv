@@ -1,2 +1,2 @@
-id,walletAddress,privKey,secondAddress,bitgetAddress,proxy
-1 ID,wallet_address,your_private_key(optional),your_okx_address(optional),,,
+walletAddress,id,privKey,secondAddress,bitgetAddress,proxy
+0x1
