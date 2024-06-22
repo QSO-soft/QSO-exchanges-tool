@@ -1,5 +1,4 @@
 import { RangeByIdFilter } from '../helpers';
-import { AutoGasNetworks } from '../managers/auto-gas/types';
 import { MoreOrLessString, NumberRange } from './common';
 import { UserModuleConfig } from './module';
 import { NetworkNumbersObj, SupportedNetworks } from './networks';
@@ -26,7 +25,6 @@ export interface AutoGasNetworkSettings {
   withdrawSleep: NumberRange;
   expectedBalance?: NumberRange;
 }
-export type AutoGasSettings = Partial<Record<AutoGasNetworks, AutoGasNetworkSettings>>;
 
 export interface ShuffleSettings {
   wallets: boolean;
@@ -70,7 +68,6 @@ export interface DefaultSettings {
   gasMultiplier: GasMultiplierSettings;
   gweiRange: Partial<Record<SupportedNetworks, NumberRange>>;
   invitesAmount?: InvitesAmount;
-  // autoGas: AutoGasSettings;
   logsTrimNumber: TrimLogsAmountSettings;
   txAttemptsToChangeProxy: number;
   useProxy: boolean;

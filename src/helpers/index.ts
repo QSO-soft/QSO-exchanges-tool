@@ -9,7 +9,6 @@ export * from './currency-handlers';
 export * from './file-handlers';
 export * from './cryptography-handlers';
 export * from './main';
-export * from './captcha';
 export * from './gas';
 export * from './clients';
 export * from './db-helper';
