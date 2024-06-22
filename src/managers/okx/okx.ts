@@ -390,6 +390,10 @@ export class Okx {
 
       const data = response.data.data;
       if (!data.length) {
+        if (response.data.msg === 'Withdrawal amount is lower than the lower limit') {
+          return;
+        }
+
         throw new Error(`Unable to transfer ${symbol} balance successfully: ${response.data.msg}`);
       }
       const { amt } = data[0];

@@ -168,6 +168,7 @@ const ALL_TOKENS = [
   'WBTC',
   'rETH',
   'SIS',
+  'ZRO',
   'PEPE',
   '1INCH',
   'AAVE',
