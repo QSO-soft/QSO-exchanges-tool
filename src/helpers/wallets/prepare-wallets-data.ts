@@ -37,7 +37,11 @@ export const prepareRowFromCSV = ({ walletData, logger, client, index }: Prepare
     decryptedPrivKey = decryptKey(privKey);
   }
 
-  const walletAddress = new client(logger, walletData).getWalletAddress() || walletData.walletAddress;
+  const walletAddress =
+    new client(logger, {
+      ...walletData,
+      privKey: decryptedPrivKey,
+    }).getWalletAddress() || walletData.walletAddress;
 
   return {
     ...restRow,
@@ -68,7 +72,11 @@ export const prepareFromCsv = async ({ logger, projectName, client }: PrepareFro
       withSaving: true,
     })) as WalletData[];
 
-    const idOrPrivKeyIsEmpty = data.some(({ walletAddress }) => !walletAddress);
+    const dataToSave: WalletData[] = data.map((walletData, index) =>
+      prepareRowFromCSV({ client, walletData, logger, index })
+    );
+
+    const idOrPrivKeyIsEmpty = dataToSave.some(({ walletAddress }) => !walletAddress);
 
     if (idOrPrivKeyIsEmpty) {
       logger.error('Unable to reate rows, some walletAddress in wallets.csv is empty', {
@@ -77,10 +85,6 @@ export const prepareFromCsv = async ({ logger, projectName, client }: PrepareFro
 
       return;
     }
-
-    const dataToSave: WalletData[] = data.map((walletData, index) =>
-      prepareRowFromCSV({ client, walletData, logger, index })
-    );
 
     if (dataToSave.length !== data.length) {
       logger.error('Unable to prepare all data correctly', {
