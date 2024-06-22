@@ -1,0 +1,89 @@
+{
+  "name": "QSO-soft",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "==================== MAIN": "====================",
+    "start": "npm run prepare-files && node src/scripts/runner.js",
+    "build": "rimraf ./dist && tsc",
+    "prepare-files": "sh prepare-files.sh",
+    "==================== DEV": "====================",
+    "dev": "tsc --watch",
+    "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\"",
+    "prepare": "husky install",
+    "prettier": "prettier 'src/**/*' --write",
+    "check-ts": "tsc src/**/*.ts --noEmit",
+    "lint": "eslint 'src/**/*'",
+    "lint:fix": "eslint 'src/**/*' --fix",
+    "typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js",
+    "==================== EXCHANGES": "====================",
+    "main:main": "node --no-warnings=ExperimentalWarning --experimental-specifier-resolution=node --loader ts-node/esm src/scripts/main/main.ts",
+    "main:restart-last": "node --no-warnings=ExperimentalWarning --experimental-specifier-resolution=node --loader ts-node/esm src/scripts/main/restart-last.ts",
+    "main:migrate-generate": "npm run typeorm -- -d src/scripts/main/db/index.ts migration:generate src/scripts/main/db/migrations/$npm_config_name"
+  },
+  "author": "QSO-soft",
+  "license": "ISC",
+  "dependencies": {
+    "@ankr.com/ankr.js": "0.4.2",
+    "@scure/bip39": "1.2.1",
+    "aptos": "^1.10.0",
+    "axios": "1.6.7",
+    "ccxt": "4.0.109",
+    "cloudscraper": "^4.6.0",
+    "crypto-js": "4.2.0",
+    "csvtojson": "2.0.10",
+    "cycletls": "1.0.21",
+    "dayjs": "1.11.10",
+    "ethers": "6.7.1",
+    "https-proxy-agent": "7.0.2",
+    "inquirer": "9.2.11",
+    "lodash": "^4.17.21",
+    "moralis": "^2.26.1",
+    "puppeteer": "21.3.6",
+    "reflect-metadata": "^0.2.1",
+    "request": "^2.88.2",
+    "sqlite3": "^5.1.7",
+    "starknet": "5.19.5",
+    "ts-node": "10.9.1",
+    "typeorm": "^0.3.20",
+    "typescript": "5.2.2",
+    "viem": "^2.13.3",
+    "web3": "4.1.2",
+    "winston": "3.10.0",
+    "yargs": "17.7.2"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "4.1.2",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "18.17.1",
+    "@types/request": "^2.48.12",
+    "@types/yargs": "17.0.28",
+    "@typescript-eslint/eslint-plugin": "6.3.0",
+    "@typescript-eslint/parser": "6.2.1",
+    "eslint": "8.46.0",
+    "eslint-config-prettier": "9.0.0",
+    "eslint-import-resolver-typescript": "2.7.1",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "husky": "8.0.3",
+    "lint-staged": "14.0.0",
+    "prettier": "3.0.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier 'src/**/*' --write",
+      "eslint 'src/**/*' --fix"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+id,walletAddress,privKey,secondAddress,bitgetAddress,proxy
+0 ID,wallet_address,,,,,
+1 ID,wallet_address,your_private_key(optional),your_okx_address(optional),,,

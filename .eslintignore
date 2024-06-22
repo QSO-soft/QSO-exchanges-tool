@@ -1,0 +1,11 @@
+dist
+build
+node_modules
+.cache
+.env.*
+**/logs/
+.tsbuildinfo
+**.md
+*.csv
+*.sh
+

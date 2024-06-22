@@ -1,0 +1,3 @@
+proxy,updateProxyLink
+socks5://login:pass@ip:port,
+http://login:pass@ip:port,
