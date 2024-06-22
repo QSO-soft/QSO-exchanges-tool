@@ -43,7 +43,7 @@ fi
 if [ ! -s src/_inputs/csv/wallets.csv ]
   then :
     echo "\nCreating wallets.csv in src/_inputs/csv/"
-    touch src/_inputs/csv/wallets.csv && echo "id,walletAddress,privKey,bitgetAddress,secondAddress,proxy" >> src/_inputs/csv/wallets.csv
+    cp src/_inputs/csv/wallets.example.csv src/_inputs/csv/wallets.csv
 fi
 if [ ! -s src/_outputs/json/wallets.json ]
   then :
