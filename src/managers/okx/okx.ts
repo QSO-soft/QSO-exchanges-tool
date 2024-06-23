@@ -488,7 +488,7 @@ export class Okx {
         const balances = await this.getSubAccountBalances(subAccName);
 
         if (!balances.length) {
-          this.logger?.info(`Balance of ${subAccName} account is empty`);
+          // this.logger?.info(`Balance of ${subAccName} account is empty`);
 
           continue;
         }
@@ -519,7 +519,7 @@ export class Okx {
       const balances = await this.getTradingAccountBalances();
 
       if (!balances.length) {
-        this.logger?.info('Balance of trading account is empty');
+        // this.logger?.info('Balance of trading account is empty');
 
         return;
       }
@@ -549,7 +549,7 @@ export class Okx {
       const balances = await this.getMainAccountBalances();
 
       if (!balances.length) {
-        this.logger?.info('Balance of main account is empty');
+        // this.logger?.info('Balance of main account is empty');
 
         return;
       }
