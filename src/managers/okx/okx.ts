@@ -459,7 +459,7 @@ export class Okx {
 
       res.push(...data);
 
-      await sleep(0.5);
+      await sleep(0.1);
     }
 
     return res.map(({ details }: any) => details).flat();
@@ -503,7 +503,7 @@ export class Okx {
           if ((!tokens?.length || tokens.includes(ccy)) && availBal > 0) {
             await this.transferBalanceFromSubToMain({ amount: availBal, subAccName, symbol: ccy });
 
-            await sleep(1);
+            await sleep(0.1);
           }
         }
       } catch (error) {
@@ -534,7 +534,7 @@ export class Okx {
         if ((!tokens?.length || tokens.includes(ccy)) && availBal > 0) {
           await this.transferBalanceFromTradingToFunding({ amount: availBal, symbol: ccy });
 
-          await sleep(1);
+          await sleep(0.1);
         }
       }
     } catch (error) {
@@ -558,7 +558,7 @@ export class Okx {
         if ((!tokens?.length || tokens.includes(ccy)) && availBal > 0) {
           await this.transferBalanceToAnotherAcc({ email, amount: availBal, symbol: ccy });
 
-          await sleep(1);
+          await sleep(0.1);
         }
       }
     } catch (error) {
