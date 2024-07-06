@@ -1,4 +1,4 @@
-import { EMPTY_BALANCE_ERROR, OKX_WL_ERROR, WAIT_TOKENS } from '../../../../constants';
+import { EMPTY_BALANCE_ERROR, OKX_WL_ERROR, WAIT_TOKENS, WALLETS_REQUIRED } from '../../../../constants';
 import {
   getContractData,
   addNumberPercentage,
@@ -51,6 +51,13 @@ export const makeOkxWithdraw = async (
     withMinAmountError,
     proxyAgent,
   } = props;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
 
   let okxWithdrawNetwork = okxWithdrawNetworkProp;
   let client = getClientByNetwork(okxWithdrawNetwork, logger, wallet);

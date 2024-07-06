@@ -7,7 +7,7 @@ import { EvmTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class PolygonZkEvmClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(polygonZkEvm, logger, Networks.POLYGON_ZKEVM, wallet);
   }
 

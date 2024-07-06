@@ -1,7 +1,7 @@
 import { defaultModuleConfigs } from '../../_inputs/settings';
 import settings from '../../_inputs/settings/settings';
 import { LoggerType } from '../../logger';
-import { SavedModules, WalletData, WalletWithModules } from '../../types';
+import { SavedModules, TransformedModuleConfig, WalletData, WalletWithModules } from '../../types';
 import { GetUpdatedModulesCallbackProp, prepareModulesWithOptions } from '../modules';
 import { limitArray, shuffleArray } from '../utils';
 import { getRangedByIdWallets, getWalletsFromKeys } from './get-filtered-wallets';
@@ -52,19 +52,22 @@ export const prepareWallets = async (params: PrepareWallets) => {
   //   }
   // }
 
-  logger.success(`We are starting to work on [${wallets.length}] wallets`, { ...logTemplate });
   return wallets;
 };
 
-export const prepareWalletsWithModules = async (params: PrepareWallets & GetUpdatedModulesCallbackProp) => {
+export const prepareWalletsWithModules = async (
+  params: PrepareWallets & GetUpdatedModulesCallbackProp
+): Promise<WalletWithModules[]> => {
   const { delayBetweenTransactions, shouldShuffleModules, getUpdatedModulesCallback } = params;
 
   const wallets = await prepareWallets(params);
 
   if (!wallets?.length) {
     params.logger.error('Wallets not found');
-    return;
+    return [];
   }
+
+  params.logger.success(`We are starting to work on [${wallets.length}] wallets`);
 
   return wallets.map((wallet) => ({
     wallet,
@@ -79,39 +82,62 @@ export const prepareWalletsWithModules = async (params: PrepareWallets & GetUpda
 };
 
 export const prepareSavedWalletsWithModules = (savedModules: SavedModules, logger: LoggerType) => {
-  const walletsToUse =
-    savedModules.walletsWithModules?.reduce<WalletWithModules[]>((acc, cur) => {
-      const currentModules = cur.modules.filter((module) => module.count > 0);
+  let modulesDataToUse =
+    savedModules.modulesData?.reduce<(WalletWithModules | TransformedModuleConfig)[]>((acc, cur) => {
+      if ('wallet' in cur) {
+        const currentModules = cur.modules.filter((module) => module.count > 0);
 
-      if (currentModules.length) {
-        return [...acc, { ...cur, modules: currentModules }];
+        if (currentModules.length) {
+          return [...acc, { ...cur, modules: currentModules }];
+        }
+      } else {
+        if (cur.count > 0) {
+          return [...acc, cur];
+        }
       }
 
       return acc;
     }, []) || [];
 
-  const wallets = walletsToUse.map(({ wallet }) => wallet);
+  const wallets = modulesDataToUse.reduce<WalletData[]>((acc, cur) => {
+    if ('wallet' in cur) {
+      return [...acc, cur.wallet];
+    }
+
+    return acc;
+  }, []);
 
   const rangedWallets = getRangedByIdWallets(wallets, settings.idFilter, logger);
-  const filteredWallets = walletsToUse.filter(({ wallet }) =>
-    rangedWallets.some(({ id, index }) => id === wallet.id && index === wallet.index)
-  );
-
-  if (settings.useRestartFromNotFinished) {
-    const failedWallets = [];
-    const notFinishedWallets = [];
-
-    for (const savedWallet of filteredWallets) {
-      const isEachModuleFailed = savedWallet.modules.every(({ isFailed }) => isFailed);
-
-      if (isEachModuleFailed) {
-        failedWallets.push(savedWallet);
-      } else {
-        notFinishedWallets.push(savedWallet);
-      }
-    }
-    return [...notFinishedWallets, ...failedWallets];
+  if (rangedWallets.length) {
+    modulesDataToUse = (modulesDataToUse as WalletWithModules[]).filter(({ wallet }) =>
+      rangedWallets.some(({ id, index }) => id === wallet.id && index === wallet.index)
+    );
   }
 
-  return filteredWallets;
+  if (settings.useRestartFromNotFinished) {
+    const failedModulesData = [];
+    const notFinishedModulesData = [];
+
+    for (const savedData of modulesDataToUse) {
+      if ('wallet' in savedData) {
+        const isEachModuleFailed = savedData.modules.every(({ isFailed }) => isFailed);
+
+        if (isEachModuleFailed) {
+          failedModulesData.push(savedData);
+        } else {
+          notFinishedModulesData.push(savedData);
+        }
+      } else {
+        if (savedData.isFailed) {
+          failedModulesData.push(savedData);
+        } else {
+          notFinishedModulesData.push(savedData);
+        }
+      }
+    }
+
+    return [...notFinishedModulesData, ...failedModulesData];
+  }
+
+  return modulesDataToUse;
 };

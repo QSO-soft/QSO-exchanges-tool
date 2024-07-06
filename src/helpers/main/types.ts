@@ -7,6 +7,7 @@ import {
   RouteSettings,
   SavedModules,
   SupportedNetworks,
+  TransformedModuleConfig,
   TransformedModuleParams,
   WalletWithModules,
 } from '../../types';
@@ -44,29 +45,38 @@ export type TransactionWorkerCallbackProp = {
 };
 export type TransactionWorkerPropsWithCallback = TransactionWorkerCallbackProp & TransactionWorkerProps;
 
-export type StartModulesCallbackArgs = {
+export type StartModulesCallbackBaseArgs = {
   nativePrices: CryptoCompareResult;
-  walletWithModules: WalletWithModules;
   logsFolderName: string;
-  walletsTotalCount: number;
-  currentWalletIndex: number;
   routeName: Route;
   dbSource: DataSource;
+  currentIndex: number;
+  totalCount: number;
+};
+export type StartSingleModuleCallbackArgs = StartModulesCallbackBaseArgs & {
+  module: TransformedModuleConfig;
   delayBetweenWallets?: NumberRange;
 };
+export type StartModulesCallbackArgs = StartModulesCallbackBaseArgs & {
+  walletWithModules: WalletWithModules;
+  delayBetweenWallets?: NumberRange;
+};
+
 type StartModulesCallback = (args: StartModulesCallbackArgs) => Promise<any>;
+type StartSingleModulesCallback = (args: StartSingleModuleCallbackArgs) => Promise<any>;
 
 export type BaseMainScriptArgs = {
   clientToPrepareWallets: ClientClass;
   logsFolderName: string;
   startModulesCallback: StartModulesCallback;
+  startSingleModuleCallback: StartSingleModulesCallback;
   projectName: string;
   dbSource: DataSource;
   isDbInitialised?: boolean;
 };
 export interface RestartLastArgs extends BaseMainScriptArgs {
   savedModules?: SavedModules;
-  walletsWithModules?: WalletWithModules[];
+  modulesData?: (WalletWithModules | TransformedModuleConfig)[];
   routeName: Route;
 }
 

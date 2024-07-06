@@ -24,26 +24,21 @@ import {
   SupportedNetworks,
   TransformedModuleConfig,
   TransformedModuleParams,
-  WalletData,
 } from '../../types';
 import { sendMsgToTG } from '../telegram';
 import { getTgMessageByStatus, transformMdMessage } from '../telegram/helpers';
-import { IModuleManager, StartModule } from './types';
+import { IModuleManager, StartModules, StartSingleModule } from './types';
 
-let walletIndex: number = 1;
+let index: number = 1;
 
 export abstract class ModuleManager {
-  private wallet: WalletData;
-  private modules: TransformedModuleConfig[];
   private baseNetwork: SupportedNetworks;
   private projectName: string;
   private dbSource: DataSource;
-  private walletsTotalCount: number;
+  private totalCount: number;
 
-  constructor({ walletWithModules, walletsTotalCount, baseNetwork, projectName, dbSource }: IModuleManager) {
-    this.wallet = walletWithModules.wallet;
-    this.modules = walletWithModules.modules;
-    this.walletsTotalCount = walletsTotalCount;
+  constructor({ totalCount, baseNetwork, projectName, dbSource }: IModuleManager) {
+    this.totalCount = totalCount;
     this.projectName = projectName;
     this.baseNetwork = baseNetwork;
     this.dbSource = dbSource;
@@ -51,31 +46,175 @@ export abstract class ModuleManager {
 
   abstract findModule(_moduleName: ModuleNames): FindModuleReturnFc | undefined;
 
-  async startModules({
-    logsFolderName,
-    nativePrices,
-    routeName,
-    delayBetweenWallets = settings.delay.betweenWallets,
-  }: StartModule) {
-    const walletId = this.wallet.id;
-    const logger = initLocalLogger(logsFolderName, walletId);
-    logger.setLoggerMeta({ wallet: this.wallet, moduleName: 'Module Manager' });
-    const logTemplate: LoggerData = {
-      action: 'startModules',
-    };
+  async startSingleModule({ module, logsFolderName, nativePrices, routeName }: StartSingleModule) {
+    const { moduleName } = module;
 
-    const preparedModules = this.modules;
-    showLogPreparedModules(preparedModules, logger);
+    const logger = initLocalLogger(logsFolderName, 'modules');
+    logger.setLoggerMeta({ moduleName });
+    const logTemplate: LoggerData = {
+      action: 'startSingleModule',
+    };
 
     let proxyObject: ProxyObject | undefined;
     let proxyAgent: ProxyAgent | undefined;
 
     if (settings.useProxy) {
-      const walletProxy = this.wallet.proxy;
-      const updateProxyLink = this.wallet.updateProxyLink;
+      const proxyData = await createRandomProxyAgent(logger);
+
+      if (!proxyData) {
+        logger.error('You do not use proxy! Fill the _inputs/csv/proxies.csv file');
+      } else {
+        const { proxyAgent: proxyAgentData, ...proxyObjectData } = proxyData;
+        proxyAgent = proxyAgentData;
+        proxyObject = proxyObjectData;
+      }
+    }
+
+    let errorMessage = '';
+
+    const telegramPrefixMsg = transformMdMessage(`[${index}/${this.totalCount}]\n`);
+
+    const markAsErrorData = {
+      projectName: this.projectName,
+      moduleIndex: index - 1,
+      routeName,
+    };
+
+    const currentModuleRunner = this.findModule(moduleName);
+
+    if (!currentModuleRunner) {
+      logger.error(`Module [${moduleName}] not found`, logTemplate);
+      return;
+    }
+
+    const moduleParams: TransformedModuleParams = {
+      ...module,
+      routeName,
+      dbSource: this.dbSource,
+      nativePrices,
+      projectName: this.projectName,
+      baseNetwork: this.baseNetwork,
+      proxyAgent,
+      proxyObject,
+      logger,
+      moduleIndex: index - 1,
+    };
+
+    let moduleResult;
+
+    try {
+      const {
+        status,
+        message,
+        txScanUrl,
+        tgMessage,
+        logTemplate: moduleLogTemplate,
+      } = await currentModuleRunner(moduleParams);
+      const messageToTg = tgMessage || message;
+
+      if (status === 'success') {
+        moduleResult = getTgMessageByStatus(
+          'success',
+          moduleName,
+          tgMessage,
+          txScanUrl
+            ? {
+                url: txScanUrl,
+                msg: 'Transaction',
+              }
+            : undefined
+        );
+      }
+
+      if (status === 'warning' || status === 'critical' || status === 'error') {
+        const messageWithModuleTemplate = msgToTemplateTransform(message || SOMETHING_WENT_WRONG, {
+          ...moduleLogTemplate,
+        });
+
+        if (status === 'error') {
+          moduleResult = getTgMessageByStatus('error', moduleName, messageToTg);
+          throw new Error(messageWithModuleTemplate);
+        }
+
+        if (status === 'warning') {
+          const errorMsg = `${messageWithModuleTemplate}${
+            module.stopWalletOnError
+              ? ', stop producing current WALLET, because stopWalletOnError is true for current module'
+              : ''
+          }`;
+
+          moduleResult = getTgMessageByStatus('warning', moduleName, tgMessage || errorMsg);
+
+          logger.error(errorMsg, {
+            ...logTemplate,
+          });
+
+          markSavedModulesAsError(markAsErrorData);
+        }
+
+        if (status === 'critical') {
+          logger.error(`${messageWithModuleTemplate}, stop producing current MODULE`, {
+            ...logTemplate,
+          });
+
+          errorMessage = message || SOMETHING_WENT_WRONG;
+
+          await sendMsgToTG({
+            message: `${telegramPrefixMsg} ${getTgMessageByStatus('critical', moduleName, messageToTg)}`,
+            type: 'criticalErrors',
+          });
+          moduleResult = getTgMessageByStatus('error', moduleName, messageToTg);
+
+          markSavedModulesAsError(markAsErrorData);
+        }
+      }
+    } catch (e) {
+      const error = e as Error;
+      errorMessage = error.message;
+
+      logger.error(`${errorMessage}, stop producing current ${moduleName} MODULE`, {
+        ...logTemplate,
+      });
+
+      markSavedModulesAsError(markAsErrorData);
+    } finally {
+      index++;
+
+      await sleepByRange(settings.delay.betweenModules, { ...logTemplate }, logger);
+    }
+
+    await sendMsgToTG({
+      message: `${telegramPrefixMsg}${moduleResult + '\n'}`,
+    });
+  }
+
+  async startModules({
+    logsFolderName,
+    nativePrices,
+    routeName,
+    walletWithModules,
+    delayBetweenWallets = settings.delay.betweenWallets,
+  }: StartModules) {
+    const { wallet, modules } = walletWithModules;
+    const walletId = wallet.id;
+
+    const logger = initLocalLogger(logsFolderName, walletId);
+    logger.setLoggerMeta({ wallet, moduleName: 'Module Manager' });
+    const logTemplate: LoggerData = {
+      action: 'startModules',
+    };
+
+    showLogPreparedModules(modules, logger);
+
+    let proxyObject: ProxyObject | undefined;
+    let proxyAgent: ProxyAgent | undefined;
+
+    if (settings.useProxy) {
+      const walletProxy = wallet.proxy;
+      const updateProxyLink = wallet.updateProxyLink;
       const isWalletProxyExist = !!walletProxy;
       const walletProxyData = isWalletProxyExist ? await getProxyAgent(walletProxy, updateProxyLink, logger) : null;
-      const proxyData = walletProxyData || (await createRandomProxyAgent(updateProxyLink, logger));
+      const proxyData = walletProxyData || (await createRandomProxyAgent(logger));
 
       if (!proxyData) {
         logger.error('You do not use proxy! Fill the _inputs/csv/proxies.csv file');
@@ -91,22 +230,22 @@ export abstract class ModuleManager {
     let errorMessage = '';
 
     const telegramPrefixMsg = transformMdMessage(
-      `[${walletIndex}/${this.walletsTotalCount}] [${this.wallet.id}]: ${this.wallet.walletAddress}\n`
+      `[${index}/${this.totalCount}] [${wallet.id}]: ${wallet.walletAddress}\n`
     );
-    walletIndex++;
+    index++;
 
     const modulesResult: string[] = [];
 
     let shouldStopReversedModule = false;
-    for (let moduleIndex = 0; moduleIndex < preparedModules.length; moduleIndex++) {
+    for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
       const markAsErrorData = {
-        wallet: this.wallet,
+        wallet,
         projectName: this.projectName,
         moduleIndex,
         routeName,
       };
 
-      const module = preparedModules[moduleIndex] as TransformedModuleConfig;
+      const module = modules[moduleIndex] as TransformedModuleConfig;
 
       const { moduleName } = module;
       logger.setLoggerMeta({ moduleName });
@@ -133,7 +272,7 @@ export abstract class ModuleManager {
         baseNetwork: this.baseNetwork,
         proxyAgent,
         proxyObject,
-        wallet: this.wallet,
+        wallet,
         logger,
         moduleIndex,
       };
@@ -155,7 +294,7 @@ export abstract class ModuleManager {
             ...logTemplate,
           });
 
-          clearSavedWallet(this.wallet, this.projectName, routeName);
+          clearSavedWallet(wallet, this.projectName, routeName);
 
           break;
         }
@@ -273,7 +412,7 @@ export abstract class ModuleManager {
           clearAllSavedModulesByName({
             moduleName,
             routeName,
-            wallet: this.wallet,
+            wallet,
             projectName: this.projectName,
           });
 
@@ -310,15 +449,15 @@ export abstract class ModuleManager {
       });
     }
 
-    logger.success(`There are no more modules for current wallet [${this.wallet.walletAddress}]. Next wallet...`, {
+    logger.success(`There are no more modules for current wallet [${wallet.walletAddress}]. Next wallet...`, {
       ...logTemplate,
     });
 
     return errorMessage
       ? {
-          wallet: this.wallet,
+          wallet,
           errorMessage,
         }
-      : { wallet: this.wallet };
+      : { wallet };
   }
 }

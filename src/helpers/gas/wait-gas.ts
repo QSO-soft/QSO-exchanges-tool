@@ -5,7 +5,7 @@ import { sleep } from '../utils';
 import { getCurrentGas } from './get-gas';
 
 interface WaiGasGeneral {
-  wallet: WalletData;
+  wallet?: WalletData;
   logger: LoggerType;
   sleepSeconds: number;
 }

@@ -2,6 +2,8 @@ const CHECK_GLOBAL_MSG = 'Please check your keys in _inputs/settings/global.js';
 
 export const OKX_ERROR = 'Something wrong with OKX';
 export const EMPTY_BALANCE_ERROR = 'Insufficient balance';
+export const WALLETS_REQUIRED = 'Wallets are required to execute it';
+export const WALLET_ADDRESS_EMPTY = 'Wallet address is not provided';
 
 export const OKX_WL_ERROR = 'Wallet was not whitelisted in OKX';
 export const LOW_BALANCE_ERROR = 'Balance is too low to make transaction. Please topUp your wallet';

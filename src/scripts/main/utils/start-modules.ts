@@ -1,17 +1,19 @@
-import { StartModulesCallbackArgs } from '../../../helpers';
+import { StartModulesCallbackArgs, StartSingleModuleCallbackArgs } from '../../../helpers';
 import { BASE_NETWORK, PROJECT_NAME } from '../constants';
 import { ModuleManager } from '../managers';
 
-export const startModulesCallback = ({
-  walletWithModules,
-  walletsTotalCount,
-  dbSource,
-  ...rest
-}: StartModulesCallbackArgs) =>
+export const startModulesCallback = ({ totalCount, dbSource, ...rest }: StartModulesCallbackArgs) =>
   new ModuleManager({
-    walletWithModules,
-    walletsTotalCount,
+    totalCount,
     projectName: PROJECT_NAME,
     baseNetwork: BASE_NETWORK,
     dbSource,
   }).startModules(rest);
+
+export const startSingleModuleCallback = ({ totalCount, dbSource, ...rest }: StartSingleModuleCallbackArgs) =>
+  new ModuleManager({
+    totalCount,
+    projectName: PROJECT_NAME,
+    baseNetwork: BASE_NETWORK,
+    dbSource,
+  }).startSingleModule(rest);

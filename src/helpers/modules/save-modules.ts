@@ -3,19 +3,19 @@ import { sep } from 'path';
 
 import { OUTPUTS_JSON_FOLDER, SAVED_MODULES_FOLDER } from '../../constants';
 import { LoggerType } from '../../logger';
-import { Route, SavedModules, WalletData, WalletWithModules } from '../../types';
+import { Route, SavedModules, TransformedModuleConfig, WalletData, WalletWithModules } from '../../types';
 import { printResults } from '../file-handlers';
 import { getFileNameWithPrefix, getSavedModulesName } from '../msg-to-template';
 import { prepareSavedWalletsWithModules } from '../wallets';
 import { BaseArgs, ClearAllSavedModulesByName, SaveModules, UpdateSavedModulesCount } from './types';
 
-export const savePreparedModules = ({ routeName, walletsWithModules, projectName }: SaveModules) => {
+export const savePreparedModules = ({ routeName, modulesData, projectName }: SaveModules) => {
   printResults<SavedModules>({
     data: JSON.stringify(
       {
         isFinished: false,
         route: routeName,
-        walletsWithModules,
+        modulesData,
       },
       null,
       2
@@ -41,30 +41,48 @@ export const updateSavedModulesCount = ({
   const fileName = getSavedModulesName(projectName, routeName);
 
   const transformDataCallback = (data: SavedModules) => {
-    const savedModules = data.walletsWithModules?.reduce<WalletWithModules[]>((acc, cur) => {
-      if (cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
-        const updatedModules = cur.modules.map(({ count, ...restModule }, index) => {
+    const savedModules = data.modulesData?.reduce<(WalletWithModules | TransformedModuleConfig)[]>(
+      (acc, cur, index) => {
+        if ('wallet' in cur) {
+          if (wallet && cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
+            const updatedModules = cur.modules.map(({ count, ...restModule }, index) => {
+              const newCount = moduleIndex === index ? (setZeroCount ? 0 : count - 1) : count;
+
+              return {
+                ...restModule,
+                count: newCount,
+              };
+            });
+
+            const updatedWalletWithModules = {
+              ...cur,
+              modules: updatedModules,
+            } as WalletWithModules;
+
+            return [...acc, updatedWalletWithModules];
+          }
+        } else {
+          const { count, ...restModule } = cur as TransformedModuleConfig;
+
           const newCount = moduleIndex === index ? (setZeroCount ? 0 : count - 1) : count;
 
-          return {
-            ...restModule,
-            count: newCount,
-          };
-        });
+          return [
+            ...acc,
+            {
+              ...restModule,
+              count: newCount,
+            },
+          ];
+        }
 
-        const updatedWalletWithModules = {
-          ...cur,
-          modules: updatedModules,
-        } as WalletWithModules;
+        return [...acc, cur];
+      },
+      []
+    );
 
-        return [...acc, updatedWalletWithModules];
-      }
-
-      return [...acc, cur];
-    }, []);
     return {
       ...data,
-      walletsWithModules: savedModules,
+      modulesData: savedModules,
     };
   };
 
@@ -80,30 +98,47 @@ export const markSavedModulesAsError = ({ wallet, moduleIndex, projectName, rout
   const fileName = getSavedModulesName(projectName, routeName);
 
   const transformDataCallback = (data: SavedModules) => {
-    const savedModules = data.walletsWithModules?.reduce<WalletWithModules[]>((acc, cur) => {
-      if (cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
-        const updatedModules = cur.modules.map(({ ...restModule }, index) => {
-          return {
-            ...restModule,
-            ...(moduleIndex === index && {
-              isFailed: true,
-            }),
-          };
-        });
+    const savedModules = data.modulesData?.reduce<(WalletWithModules | TransformedModuleConfig)[]>(
+      (acc, cur, index) => {
+        if ('wallet' in cur) {
+          if (wallet && cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
+            const updatedModules = cur.modules.map(({ ...restModule }, index) => {
+              return {
+                ...restModule,
+                ...(moduleIndex === index && {
+                  isFailed: true,
+                }),
+              };
+            });
 
-        const updatedWalletWithModules = {
-          ...cur,
-          modules: updatedModules,
-        } as WalletWithModules;
+            const updatedWalletWithModules = {
+              ...cur,
+              modules: updatedModules,
+            } as WalletWithModules;
 
-        return [...acc, updatedWalletWithModules];
-      }
+            return [...acc, updatedWalletWithModules];
+          }
+        } else {
+          const { ...restModule } = cur as TransformedModuleConfig;
 
-      return [...acc, cur];
-    }, []);
+          return [
+            ...acc,
+            {
+              ...restModule,
+              ...(moduleIndex === index && {
+                isFailed: true,
+              }),
+            },
+          ];
+        }
+
+        return [...acc, cur];
+      },
+      []
+    );
     return {
       ...data,
-      walletsWithModules: savedModules,
+      modulesData: savedModules,
     };
   };
 
@@ -123,30 +158,47 @@ export const clearAllSavedModulesByName = ({
   moduleName,
 }: ClearAllSavedModulesByName) => {
   const transformDataCallback = (data: SavedModules) => {
-    const savedModules = data.walletsWithModules?.reduce<WalletWithModules[]>((acc, cur) => {
-      if (cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
-        const updatedModules = cur.modules.map(({ count, ...restModule }) => {
+    const savedModules = data.modulesData?.reduce<(WalletWithModules | TransformedModuleConfig)[]>(
+      (acc, cur, index) => {
+        if ('wallet' in cur) {
+          if (cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
+            const updatedModules = cur.modules.map(({ count, ...restModule }) => {
+              const newCount = moduleName === restModule.moduleName ? 0 : count;
+
+              return {
+                ...restModule,
+                count: newCount,
+              };
+            });
+
+            const updatedWalletWithModules = {
+              ...cur,
+              modules: updatedModules,
+            } as WalletWithModules;
+
+            return [...acc, updatedWalletWithModules];
+          }
+        } else {
+          const { count, ...restModule } = cur as TransformedModuleConfig;
+
           const newCount = moduleName === restModule.moduleName ? 0 : count;
 
-          return {
-            ...restModule,
-            count: newCount,
-          };
-        });
+          return [
+            ...acc,
+            {
+              ...restModule,
+              count: newCount,
+            },
+          ];
+        }
 
-        const updatedWalletWithModules = {
-          ...cur,
-          modules: updatedModules,
-        } as WalletWithModules;
-
-        return [...acc, updatedWalletWithModules];
-      }
-
-      return [...acc, cur];
-    }, []);
+        return [...acc, cur];
+      },
+      []
+    );
     return {
       ...data,
-      walletsWithModules: savedModules,
+      modulesData: savedModules,
     };
   };
 
@@ -161,16 +213,18 @@ export const clearAllSavedModulesByName = ({
 
 export const clearSavedWallet = (wallet: WalletData, projectName: string, routeName: string) => {
   const transformDataCallback = (data: SavedModules) => {
-    const savedModules = data.walletsWithModules?.reduce<WalletWithModules[]>((acc, cur) => {
-      if (cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
-        return acc;
+    const savedModules = data.modulesData?.reduce<(WalletWithModules | TransformedModuleConfig)[]>((acc, cur) => {
+      if ('wallet' in cur) {
+        if (cur.wallet.id === wallet.id && cur.wallet.index === wallet.index) {
+          return acc;
+        }
       }
 
       return [...acc, cur];
     }, []);
     return {
       ...data,
-      walletsWithModules: savedModules,
+      modulesData: savedModules,
     };
   };
 
@@ -187,14 +241,14 @@ export const updateSavedModulesFinishStatus = ({ projectName, routeName }: BaseA
   const fileName = getSavedModulesName(projectName, routeName);
   const savedModules = getSavedModules(projectName, routeName);
 
-  const walletsWithModules = prepareSavedWalletsWithModules(savedModules, logger);
+  const modulesData = prepareSavedWalletsWithModules(savedModules, logger);
 
-  if (walletsWithModules) {
+  if (modulesData) {
     printResults<SavedModules>({
       data: JSON.stringify(
         {
-          isFinished: !walletsWithModules.length,
-          walletsWithModules,
+          isFinished: !modulesData.length,
+          modulesData,
           route: savedModules.route,
         },
         null,
@@ -220,27 +274,29 @@ export const getSavedModules = (projectName: string, routeName: Route): SavedMod
   const walletsJson = readFileSync(walletsPath, 'utf-8');
   const wallets = JSON.parse(walletsJson) as WalletData[];
 
-  const walletsWithModules =
-    savedModules.walletsWithModules?.map((walletWithModules) => {
-      const walletId = walletWithModules.wallet.id;
-      const walletIndex = walletWithModules.wallet.index;
+  const modulesData =
+    savedModules.modulesData?.map((modulesData) => {
+      if ('wallet' in modulesData) {
+        const walletId = modulesData.wallet.id;
+        const walletIndex = modulesData.wallet.index;
 
-      const currentWallet = wallets.find(({ id, index }) => id === walletId && index === walletIndex);
-      if (currentWallet) {
-        return {
-          ...walletWithModules,
-          wallet: {
-            ...walletWithModules.wallet,
-            ...currentWallet,
-          },
-        };
+        const currentWallet = wallets.find(({ id, index }) => id === walletId && index === walletIndex);
+        if (currentWallet) {
+          return {
+            ...modulesData,
+            wallet: {
+              ...modulesData.wallet,
+              ...currentWallet,
+            },
+          };
+        }
       }
 
-      return walletWithModules;
+      return modulesData;
     }) || [];
 
   return {
     ...savedModules,
-    walletsWithModules,
+    modulesData,
   };
 };

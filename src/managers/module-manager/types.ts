@@ -1,21 +1,26 @@
 import { DataSource } from 'typeorm';
 
 import { CryptoCompareResult } from '../../helpers';
-import { NumberRange, Route, SupportedNetworks, WalletWithModules } from '../../types';
+import { NumberRange, Route, SupportedNetworks, TransformedModuleConfig, WalletWithModules } from '../../types';
 
 export interface IModuleManager {
-  walletWithModules: WalletWithModules;
-  walletsTotalCount: number;
+  totalCount: number;
   projectName: string;
   baseNetwork: SupportedNetworks;
   dbSource: DataSource;
 }
-export interface StartModule {
+
+export interface StartModulesBase {
   routeName: Route;
   logsFolderName: string;
 
-  currentWalletIndex: number;
+  currentIndex: number;
   nativePrices: CryptoCompareResult;
-
+}
+export interface StartSingleModule extends StartModulesBase {
+  module: TransformedModuleConfig;
+}
+export interface StartModules extends StartModulesBase {
+  walletWithModules: WalletWithModules;
   delayBetweenWallets?: NumberRange;
 }

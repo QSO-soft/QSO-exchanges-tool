@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 
 import { BINANCE } from '../../../../_inputs/settings';
-import { UNABLE_GET_WITHDRAW_FEE_ERROR, WAIT_TOKENS } from '../../../../constants';
+import { UNABLE_GET_WITHDRAW_FEE_ERROR, WAIT_TOKENS, WALLETS_REQUIRED } from '../../../../constants';
 import { BINANCE_API_URL, BINANCE_PUBLIC_API_URL } from '../../../../constants/urls';
 import {
   GetTopUpOptionsResult,
@@ -60,6 +60,13 @@ export const makeBinanceWithdraw = async (
     withMinAmountError,
     randomBinanceWithdrawNetworks,
   } = props;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
 
   let binanceProxyAgent;
   if (BINANCE.proxy) {

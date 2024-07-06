@@ -6,7 +6,13 @@ import { SocksProxyAgent } from 'socks-proxy-agent';
 
 import { BASE_TIMEOUT, INPUTS_CSV_FOLDER } from '../../constants';
 import { LoggerType } from '../../logger';
-import { OptionalPreparedProxyData, OptionalProxyObject, PreparedProxyData, ProxyAgent } from '../../types';
+import {
+  JsonProxyObject,
+  OptionalPreparedProxyData,
+  OptionalProxyObject,
+  PreparedProxyData,
+  ProxyAgent,
+} from '../../types';
 import { convertAndWriteToJSON } from '../file-handlers';
 import { getAxiosConfig } from './get-axios-config';
 import { getRandomItemFromArray } from './randomizers';
@@ -46,21 +52,21 @@ export const getRandomProxy = async (logger?: LoggerType) => {
   const proxies = (await convertAndWriteToJSON({
     inputPath,
     logger,
-  })) as { proxy: string }[];
+  })) as JsonProxyObject[];
 
   const randomProxy = getRandomItemFromArray(proxies);
 
   if (randomProxy) {
-    return prepareProxy(randomProxy.proxy);
+    return prepareProxy(randomProxy);
   }
 
   return;
 };
 
-export const prepareProxy = (proxy: string, logger?: LoggerType): OptionalPreparedProxyData => {
+export const prepareProxy = (proxyObj: JsonProxyObject, logger?: LoggerType): OptionalPreparedProxyData => {
   try {
     const urlPattern = /^(socks5|http|https):\/\/([^:]+):([^@]+)@([^:]+):(\d+)$/i;
-    const match = proxy.match(urlPattern);
+    const match = proxyObj.proxy.match(urlPattern);
 
     if (!match) {
       logger?.error('Invalid proxy URL format');
@@ -75,12 +81,13 @@ export const prepareProxy = (proxy: string, logger?: LoggerType): OptionalPrepar
     }
 
     return {
-      url: proxy,
+      url: proxyObj.proxy,
       proxyType: type.toUpperCase(),
       proxyIp: ip,
       proxyPort: port,
       proxyLogin: login,
       proxyPass: pass,
+      updateProxyLink: proxyObj.updateProxyLink,
     };
   } catch (err) {
     const error = err as Error;
@@ -91,10 +98,9 @@ export const prepareProxy = (proxy: string, logger?: LoggerType): OptionalPrepar
 
 export const prepareProxyAgent = async (
   proxyData: PreparedProxyData,
-  updateProxyLink?: string,
   logger?: LoggerType
 ): Promise<OptionalProxyObject> => {
-  const { url, ...restProxyData } = proxyData;
+  const { url, updateProxyLink, ...restProxyData } = proxyData;
 
   const proxyAgent = createProxyAgent(url, logger);
 
@@ -160,23 +166,20 @@ export const getProxyAgent = async (
   updateProxyLink?: string,
   logger?: LoggerType
 ): Promise<OptionalProxyObject> => {
-  const preparedProxyData = prepareProxy(proxy, logger);
+  const preparedProxyData = prepareProxy({ proxy, updateProxyLink }, logger);
 
   if (preparedProxyData) {
-    return prepareProxyAgent(preparedProxyData, updateProxyLink, logger);
+    return prepareProxyAgent(preparedProxyData, logger);
   }
 
   return null;
 };
 
-export const createRandomProxyAgent = async (
-  updateProxyLink?: string,
-  logger?: LoggerType
-): Promise<OptionalProxyObject> => {
+export const createRandomProxyAgent = async (logger?: LoggerType): Promise<OptionalProxyObject> => {
   const proxy = await getRandomProxy();
 
   if (proxy) {
-    return prepareProxyAgent(proxy, updateProxyLink, logger);
+    return prepareProxyAgent(proxy, logger);
   }
 
   return null;

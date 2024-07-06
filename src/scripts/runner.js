@@ -55,7 +55,10 @@ const getStartMainCommand = async (projectName) => {
     if (data?.route) {
       const notFinished =
         !data.isFinished &&
-        !!data.walletsWithModules?.filter(({ modules }) => modules.some(({ count }) => count > 0)).length;
+        data.modulesData &&
+        ('wallet' in data.modulesData
+          ? !!data.modulesData.filter(({ modules }) => modules.some(({ count }) => count > 0)).length
+          : !!data.modulesData.filter(({ count }) => count > 0));
 
       if (notFinished) {
         notFinishedRoutes.push(data.route);

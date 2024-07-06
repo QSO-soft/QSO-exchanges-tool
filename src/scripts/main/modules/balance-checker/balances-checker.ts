@@ -17,15 +17,15 @@ export const execBalanceChecker = async (params: TransformedModuleParams) =>
   });
 
 const makeBalanceChecker = async (props: TransactionCallbackParams): TransactionCallbackReturn => {
-  const { client, network, wallet, contractAddress } = props;
+  const { client, walletAddress, network, wallet, contractAddress } = props;
+
   const { int: intBalance } = await getCurrentBalanceByContract({ client, contractAddress });
   const { symbol } = await getCurrentSymbolByContract({ client, contractAddress });
 
   const fileName = 'balance-checker';
 
   const dataToSave = {
-    id: wallet.id,
-    walletAddress: wallet.walletAddress,
+    walletAddress: walletAddress || wallet?.walletAddress,
     amount: intBalance,
     currency: symbol,
     network,

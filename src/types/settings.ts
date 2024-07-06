@@ -62,6 +62,7 @@ export interface DefaultSettings {
   shuffle: ShuffleSettings;
   threads: number | 'all';
   txAttempts: number;
+  useEmptyWalletsMode: boolean;
   calculateStart: CalculateStart;
   delay: SettingsDelays;
   maxGas: MaxGasSetting;

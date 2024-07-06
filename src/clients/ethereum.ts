@@ -7,7 +7,7 @@ import { EthTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class EthClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(mainnet, logger, Networks.ETH, wallet);
   }
 

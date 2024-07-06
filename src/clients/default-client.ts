@@ -14,7 +14,7 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 
 import settings from '../_inputs/settings/settings';
-import { EMPTY_PRIV_KEY } from '../constants';
+import { EMPTY_PRIV_KEY, WALLET_ADDRESS_EMPTY, WALLETS_REQUIRED } from '../constants';
 import {
   convertPrivateKey,
   decimalToInt,
@@ -53,13 +53,13 @@ export class DefaultClient {
   network: Networks;
   currentRpc: string;
   explorerLink: string;
-  wallet: WalletData;
+  wallet?: WalletData;
 
-  constructor(chainData: Chain, logger: LoggerType, network: Networks, wallet: WalletData) {
+  constructor(chainData: Chain, logger: LoggerType, network: Networks, wallet?: WalletData) {
     this.logger = logger;
     this.chainData = chainData;
     this.wallet = wallet;
-    this.privateKey = convertPrivateKey(wallet.privKey);
+    this.privateKey = convertPrivateKey(wallet?.privKey);
     this.network = network;
     this.explorerLink = getExplorerLinkByNetwork(network);
     this.rpcs = getAllRpcs(network);
@@ -112,8 +112,13 @@ export class DefaultClient {
     return;
   }
 
-  async getNativeBalance(): Promise<Balance> {
-    const weiBalance = await this.publicClient.getBalance({ address: this.wallet.walletAddress });
+  async getNativeBalance(walletAddress?: Hex): Promise<Balance> {
+    const address = walletAddress || this.wallet?.walletAddress;
+    if (!address) {
+      throw new Error(WALLET_ADDRESS_EMPTY);
+    }
+
+    const weiBalance = await this.publicClient.getBalance({ address });
     const intBalance = Number(formatEther(weiBalance));
     const decimals = this.chainData.nativeCurrency.decimals;
 
@@ -127,12 +132,17 @@ export class DefaultClient {
       functionName: 'decimals',
     })) as number;
   }
-  async getBalanceByContract(contractInfo: TokenContract): Promise<Balance> {
+  async getBalanceByContract(contractInfo: TokenContract, walletAddress?: Hex): Promise<Balance> {
+    const address = walletAddress || this.wallet?.walletAddress;
+    if (!address) {
+      throw new Error(WALLET_ADDRESS_EMPTY);
+    }
+
     const weiBalance = (await this.publicClient.readContract({
       address: contractInfo.address,
       abi: contractInfo.abi,
       functionName: 'balanceOf',
-      args: [this.wallet.walletAddress],
+      args: [address],
     })) as bigint;
 
     const decimals = await this.getDecimalsByContract(contractInfo);
@@ -165,6 +175,10 @@ export class DefaultClient {
     gasLimitRange?: NumberRange
   ) {
     const randomAmount = getRandomBigInt([3000000000000000000000n, 3500000000000000000000n]);
+
+    if (!this.wallet) {
+      throw new Error(WALLETS_REQUIRED);
+    }
 
     const allowanceAmount = await this.publicClient.readContract({
       address: tokenContract,

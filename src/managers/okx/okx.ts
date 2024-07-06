@@ -96,7 +96,7 @@ export class Okx {
 
   private setOkxController() {
     if (this.proxy) {
-      const proxyObject = prepareProxy(this.proxy, this.logger);
+      const proxyObject = prepareProxy({ proxy: this.proxy }, this.logger);
       const proxyAgent = createProxyAgent(proxyObject?.url);
 
       if (proxyAgent) {

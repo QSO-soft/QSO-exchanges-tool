@@ -7,7 +7,7 @@ import { ArbitrumTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class ArbitrumClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(arbitrum, logger, Networks.ARBITRUM, wallet);
   }
 

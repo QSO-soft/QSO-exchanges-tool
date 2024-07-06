@@ -34,7 +34,7 @@ export const getSavedCheckersMessage = (projectName: string) =>
 export const getFileNameWithPrefix = (projectName: string, fileName: string) =>
   `${projectName === 'main' ? '' : projectName + '-'}${fileName}`;
 export const getSavedModulesName = (projectName: string, routeName: string) =>
-  `${projectName === 'main' ? '' : projectName + '-'}${routeName}-saved-modules.json`;
+  `${projectName + '-'}${routeName}-saved-modules.json`;
 
 export const assert = (condition: boolean, message?: string): void => {
   if (!condition) {

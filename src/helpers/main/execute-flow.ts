@@ -1,6 +1,7 @@
 import uniq from 'lodash/uniq';
 
 import { defaultTokenAbi } from '../../clients/abi';
+import { WALLETS_REQUIRED } from '../../constants';
 import { BetweenModulesEntity } from '../../scripts/main/db/entities';
 import { FindModuleReturnFc, NetworksArray, SupportedNetworks, Tokens } from '../../types';
 import { getClientByNetwork } from '../clients';
@@ -24,6 +25,13 @@ export const executeFlow = async (params: ExecuteFlowParams): TransactionCallbac
     logger,
     flows,
   } = params;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
 
   const { item, dbRepo } = await findDbItem({
     entity: BetweenModulesEntity,

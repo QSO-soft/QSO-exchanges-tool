@@ -24,15 +24,20 @@ import { LoggerType } from '../../logger';
 import { Networks, SupportedNetworks, WalletData } from '../../types';
 import { decryptKey } from '../cryptography-handlers';
 
-export const getClientByNetwork = (networkName: SupportedNetworks, logger: LoggerType, wallet: WalletData) => {
-  let decryptedPrivKey;
-  if (wallet.privKey) {
-    decryptedPrivKey = decryptKey(wallet.privKey);
+export const getClientByNetwork = (networkName: SupportedNetworks, logger: LoggerType, wallet?: WalletData) => {
+  let walletWithDecryptedPrivKey;
+
+  if (wallet) {
+    let decryptedPrivKey;
+    if (wallet.privKey) {
+      decryptedPrivKey = decryptKey(wallet.privKey);
+    }
+
+    walletWithDecryptedPrivKey = {
+      ...wallet,
+      privKey: decryptedPrivKey,
+    };
   }
-  const walletWithDecryptedPrivKey = {
-    ...wallet,
-    privKey: decryptedPrivKey,
-  };
 
   switch (networkName) {
     case Networks.BLAST:

@@ -15,7 +15,7 @@ export interface BaseArgs {
 }
 
 export type SaveModules = BaseArgs & {
-  walletsWithModules: WalletWithModules[];
+  modulesData: (WalletWithModules | TransformedModuleConfig)[];
 };
 
 export type PrepareModulesArgs = {
@@ -36,7 +36,7 @@ export type GetUpdatedModulesCallbackProp = {
 };
 
 export interface UpdateSavedModulesCount extends BaseArgs {
-  wallet: WalletData;
+  wallet?: WalletData;
   moduleIndex: number;
   setZeroCount?: boolean;
 }

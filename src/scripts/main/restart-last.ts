@@ -6,7 +6,7 @@ import { Route } from '../../types';
 import { PROJECT_NAME } from './constants';
 import dbSource from './db';
 import { buildLocalFolderName } from './logger';
-import { startModulesCallback } from './utils';
+import { startModulesCallback, startSingleModuleCallback } from './utils';
 
 const slicedArgv = process.argv.slice(2);
 const argv = await yargs().demandCommand(2, 'Args error').parse(slicedArgv);
@@ -20,6 +20,7 @@ const [_, route] = argv._;
     routeName: route as Route,
     clientToPrepareWallets: EthClient,
     startModulesCallback,
+    startSingleModuleCallback,
     projectName: PROJECT_NAME,
     dbSource,
   });

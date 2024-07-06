@@ -7,7 +7,7 @@ import { Networks, PolygonTokens, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class PolygonClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(polygon, logger, Networks.POLYGON, wallet);
   }
 

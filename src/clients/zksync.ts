@@ -7,7 +7,7 @@ import { Networks, WalletData, ZkSyncTokens } from '../types';
 import { DefaultClient } from './default-client';
 
 export class ZkSyncClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(zkSync, logger, Networks.ZKSYNC, wallet);
   }
 

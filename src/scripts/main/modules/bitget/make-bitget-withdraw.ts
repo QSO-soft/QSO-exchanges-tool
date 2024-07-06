@@ -1,3 +1,4 @@
+import { WALLETS_REQUIRED } from '../../../../constants';
 import {
   transactionWorker,
   calculateAmount,
@@ -34,6 +35,13 @@ export const makeBitgetWithdraw = async (params: TransactionCallbackParams): Tra
     useUsd,
     nativePrices,
   } = params;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
 
   let withdrawNetwork = network;
   let currentClient = client;

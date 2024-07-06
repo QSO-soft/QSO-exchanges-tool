@@ -7,7 +7,7 @@ import { GnosisTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class GnosisClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(gnosis, logger, Networks.GNOSIS, wallet);
   }
 

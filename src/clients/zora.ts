@@ -7,7 +7,7 @@ import { Networks, WalletData, ZoraTokens } from '../types';
 import { DefaultClient } from './default-client';
 
 export class ZoraClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(zora, logger, Networks.ZORA, wallet);
   }
 

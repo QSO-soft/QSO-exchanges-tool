@@ -7,7 +7,7 @@ import { BaseTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class BaseClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(base, logger, Networks.BASE, wallet);
   }
 

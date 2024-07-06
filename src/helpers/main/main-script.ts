@@ -5,20 +5,21 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import duration from 'dayjs/plugin/duration';
 
+import { defaultModuleConfigs } from '../../_inputs/settings';
 import settings from '../../_inputs/settings/settings';
 import { SAVED_MODULES_FOLDER } from '../../constants';
 // import { WalletsEntity } from '../../scripts/zora/db/entities';
-import { NumberRange, Route, SavedModules, WalletWithModules } from '../../types';
+import { NumberRange, Route, SavedModules, TransformedModuleConfig, WalletWithModules } from '../../types';
 import { getAllNativePrices } from '../currency-handlers';
 import { saveFailedWalletsToCSV } from '../file-handlers';
-import { GetUpdatedModulesCallbackProp } from '../modules';
+import { GetUpdatedModulesCallbackProp, prepareModulesWithOptions } from '../modules';
 import {
   clearSavedModules,
   getSavedModules,
   savePreparedModules,
   updateSavedModulesFinishStatus,
 } from '../modules/save-modules';
-import { initLocalLogger, showLogSelectedModules } from '../show-logs';
+import { initLocalLogger, showLogPreparedModules, showLogSelectedModules } from '../show-logs';
 import { getDateDiff, sleep } from '../utils';
 import { prepareSavedWalletsWithModules, prepareWalletsData, prepareWalletsWithModules } from '../wallets';
 import { restartLast } from './restart-last';
@@ -35,10 +36,12 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
     routesField,
     routeHandler,
     startModulesCallback,
+    startSingleModuleCallback,
     projectName,
     filterWalletsCallback,
     dbSource: dbSourceProp,
     isDbInitialised = false,
+    getUpdatedModulesCallback,
     ...restProps
   } = props;
 
@@ -46,11 +49,15 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
   // const repo = dbSource.getRepository(WalletsEntity);
   // await repo.clear();
 
-  const jsonWallets = await prepareWalletsData({
-    logsFolderName,
-    projectName,
-    client: clientToPrepareWallets,
-  });
+  const useEmptyWalletsMode = settings.useEmptyWalletsMode;
+
+  const jsonWallets = useEmptyWalletsMode
+    ? []
+    : await prepareWalletsData({
+        logsFolderName,
+        projectName,
+        client: clientToPrepareWallets,
+      });
 
   const logger = initLocalLogger(logsFolderName, 'main');
   logger.setLoggerMeta({ moduleName: 'Main' });
@@ -81,28 +88,41 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
 
       const nativePrices = await getAllNativePrices(logger);
 
-      const walletsWithModules = await prepareWalletsWithModules({
-        ...restProps,
-        route,
+      const basePrepareProps = {
         routeSettings,
-        logger,
-        jsonWallets,
-        projectName,
-        dbSource,
-        filterWalletsCallback,
-        nativePrices,
         delayBetweenTransactions: delay.betweenTransactions,
         shouldShuffleModules: shuffle.modules,
-        shouldShuffleWallets: shuffle.wallets,
-      });
-      if (!walletsWithModules?.length) {
-        logger.error('Unable to prepare wallets');
-        continue;
+        getUpdatedModulesCallback,
+      };
+      let modulesData: (WalletWithModules | TransformedModuleConfig)[];
+      if (useEmptyWalletsMode) {
+        modulesData = prepareModulesWithOptions({
+          ...basePrepareProps,
+          defaultModuleConfigs,
+        });
+      } else {
+        modulesData = await prepareWalletsWithModules({
+          ...restProps,
+          ...basePrepareProps,
+          route,
+          logger,
+          jsonWallets,
+          projectName,
+          dbSource,
+          filterWalletsCallback,
+          nativePrices,
+          shouldShuffleWallets: shuffle.wallets,
+        });
+
+        if (!modulesData?.length) {
+          logger.error('Unable to prepare wallets');
+          continue;
+        }
       }
 
       if (useSavedModules) {
         savePreparedModules({
-          walletsWithModules,
+          modulesData,
           routeName: route,
           projectName,
         });
@@ -110,7 +130,7 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
 
       let currentThreads = 1;
       if (threads === 'all') {
-        currentThreads = walletsWithModules.length;
+        currentThreads = modulesData.length;
       } else {
         currentThreads = threads;
       }
@@ -124,29 +144,52 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
         }
       }
 
-      logger.success(`Starting script in [${currentThreads}] threads`);
+      const baseStartModulesArgs = {
+        nativePrices,
+        logsFolderName,
+        routeName: route,
+        dbSource,
+      };
+      if (useEmptyWalletsMode) {
+        logger.success('Starting script in empty wallets mode');
 
-      const results = await startWithThreads<WalletWithModules>({
-        size: currentThreads,
-        array: walletsWithModules,
-        callback: async (walletWithModules: WalletWithModules, _, currentWalletIndex) =>
-          startModulesCallback({
-            nativePrices,
-            walletWithModules,
-            logsFolderName,
-            dbSource,
-            walletsTotalCount: walletsWithModules.length,
-            currentWalletIndex,
-            routeName: route,
-            delayBetweenWallets,
-          }),
-        logger,
-      });
+        showLogPreparedModules(modulesData as TransformedModuleConfig[], logger);
+
+        await startWithThreads<TransformedModuleConfig>({
+          size: 1,
+          array: modulesData as TransformedModuleConfig[],
+          callback: async (module: TransformedModuleConfig, _, currentIndex) =>
+            startSingleModuleCallback({
+              ...baseStartModulesArgs,
+              module,
+              currentIndex,
+              totalCount: modulesData.length,
+            }),
+          logger,
+        });
+      } else {
+        logger.success(`Starting script in [${currentThreads}] threads`);
+
+        const results = await startWithThreads<WalletWithModules>({
+          size: currentThreads,
+          array: modulesData as WalletWithModules[],
+          callback: async (walletWithModules: WalletWithModules, _, currentIndex) =>
+            startModulesCallback({
+              ...baseStartModulesArgs,
+              walletWithModules,
+              totalCount: modulesData.length,
+              currentIndex,
+              delayBetweenWallets,
+            }),
+          logger,
+        });
+
+        saveFailedWalletsToCSV({ results: results.flat(), logger, projectName });
+      }
 
       if (useSavedModules) {
         updateSavedModulesFinishStatus({ projectName, routeName: route }, logger);
       }
-      saveFailedWalletsToCSV({ results: results.flat(), logger, projectName });
     } catch (error) {
       logger.error(`${error}`);
       continue;
@@ -168,7 +211,12 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
       if (data?.route) {
         const notFinished =
           !data.isFinished &&
-          !!data.walletsWithModules?.filter(({ modules }) => modules.some(({ count }) => count > 0)).length;
+          data.modulesData &&
+          ('wallet' in data.modulesData
+            ? !!(data.modulesData as WalletWithModules[]).filter(({ modules }) =>
+                modules.some(({ count }) => count > 0)
+              ).length
+            : !!(data.modulesData as TransformedModuleConfig[]).filter(({ count }) => count > 0));
 
         if (notFinished) {
           notFinishedRoutes.push(data.route);
@@ -178,23 +226,24 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
 
     for (const route of notFinishedRoutes) {
       let savedModules = getSavedModules(projectName, route);
-      let walletsWithModulesToRestart = prepareSavedWalletsWithModules(savedModules, logger);
+      let modulesDataToRestart = prepareSavedWalletsWithModules(savedModules, logger);
 
-      while (walletsWithModulesToRestart?.length) {
+      while (modulesDataToRestart?.length) {
         await restartLast({
           logsFolderName,
           routeName: route,
           dbSource,
           projectName,
           startModulesCallback,
+          startSingleModuleCallback,
           clientToPrepareWallets,
           isDbInitialised: true,
           savedModules,
-          walletsWithModules: walletsWithModulesToRestart,
+          modulesData: modulesDataToRestart,
         });
 
         savedModules = getSavedModules(projectName, route);
-        walletsWithModulesToRestart = prepareSavedWalletsWithModules(savedModules, logger);
+        modulesDataToRestart = prepareSavedWalletsWithModules(savedModules, logger);
       }
     }
   }

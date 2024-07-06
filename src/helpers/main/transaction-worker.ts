@@ -185,7 +185,6 @@ export const transactionWorker = async (props: TransactionWorkerPropsWithCallbac
 
         break;
       } catch (e) {
-        console.log(e);
         const error = e as Error;
         let errorMessage: string = error.message;
 
@@ -296,7 +295,7 @@ export const transactionWorker = async (props: TransactionWorkerPropsWithCallbac
           const shouldUpdateProxy = checkMultipleOf(attemptsToChangeProxy, currentRetryCount);
 
           if (settings.useProxy && shouldUpdateProxy) {
-            const newProxyData = await createRandomProxyAgent(wallet.updateProxyLink, logger);
+            const newProxyData = await createRandomProxyAgent(logger);
 
             if (newProxyData) {
               const { proxyAgent: newProxyAgent, ...newProxyObject } = newProxyData;

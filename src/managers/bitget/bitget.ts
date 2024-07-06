@@ -50,7 +50,7 @@ export class Bitget {
     this.network = network;
     this.hideExtraLogs = hideExtraLogs;
     if (BITGET.proxy) {
-      const proxyObject = prepareProxy(BITGET.proxy, logger);
+      const proxyObject = prepareProxy({ proxy: BITGET.proxy }, logger);
       const proxyAgent = createProxyAgent(proxyObject?.url);
 
       if (proxyAgent) {

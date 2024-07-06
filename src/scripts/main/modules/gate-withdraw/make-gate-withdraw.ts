@@ -2,7 +2,7 @@ import { gate } from 'ccxt';
 
 import { GATE } from '../../../../_inputs/settings';
 import { defaultTokenAbi } from '../../../../clients/abi';
-import { BASE_TIMEOUT, GATE_EMPTY_KEYS_ERROR, GATE_WL_ERROR } from '../../../../constants';
+import { BASE_TIMEOUT, GATE_EMPTY_KEYS_ERROR, GATE_WL_ERROR, WALLETS_REQUIRED } from '../../../../constants';
 import {
   transactionWorker,
   createProxyAgent,
@@ -36,6 +36,13 @@ const makeGateWithdraw = async (params: TransactionCallbackParams): TransactionC
     tokenToWithdraw,
     minAmount,
   } = params;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
 
   const correctGateNetwork = GATE_NETWORK_MAP[network];
   if (!correctGateNetwork) {
@@ -105,7 +112,7 @@ const makeGateWithdraw = async (params: TransactionCallbackParams): TransactionC
       const proxy = GATE.proxy;
       let proxyAgent: ProxyAgent | null = null;
       if (proxy) {
-        const proxyObject = prepareProxy(proxy, logger);
+        const proxyObject = prepareProxy({ proxy }, logger);
         proxyAgent = createProxyAgent(proxyObject?.url);
       }
 

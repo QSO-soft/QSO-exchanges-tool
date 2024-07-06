@@ -25,7 +25,7 @@ export const startWithThreads = async <T>({ size, array, callback, logger }: Sta
 
     const results = await Promise.allSettled(promises);
     finishCount = currentIndex;
-    logger.success(`Total wallets: [${finishCount}/${totalCount}]`, { action: 'startWithThreads' });
+    logger.success(`Total done: [${finishCount}/${totalCount}]`, { action: 'startWithThreads' });
     allResults.push(results);
   }
 

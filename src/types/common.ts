@@ -27,7 +27,7 @@ export interface WalletData {
 
 export interface JsonProxyObject {
   proxy: string;
-  proxy_type: string;
+  updateProxyLink?: string;
 }
 
 export interface WalletWithModules {
@@ -36,7 +36,7 @@ export interface WalletWithModules {
 }
 
 export interface SavedModules {
-  walletsWithModules?: WalletWithModules[];
+  modulesData?: (WalletWithModules | TransformedModuleConfig)[];
   route: Route;
   isFinished: boolean;
 }
@@ -52,6 +52,7 @@ export type ProxyObject = {
   proxyPort: string;
   proxyLogin: string;
   proxyPass: string;
+  updateProxyLink?: string;
 };
 export type OptionalProxyObject =
   | (ProxyObject & {

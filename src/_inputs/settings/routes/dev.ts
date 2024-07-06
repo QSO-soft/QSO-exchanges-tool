@@ -10,7 +10,23 @@ const countModules = [0, 0] as NumberRange;
 
 const groupSettings: GroupSettings = {};
 
-const modules: UserModuleConfig[] = [];
+const modules: UserModuleConfig[] = [
+  {
+    moduleName: 'okx-collect',
+
+    indexGroup: 0,
+  },
+  // {
+  //   moduleName: 'okx-withdraw',
+  //
+  //   indexGroup: 0,
+  // },
+  {
+    moduleName: 'balance-checker',
+
+    indexGroup: 0,
+  },
+];
 
 // Выполнит скрипт на указанном количестве кошельков
 // То есть из 100 кошельков, которые попадут под фильтр - возьмёт в работу только первые

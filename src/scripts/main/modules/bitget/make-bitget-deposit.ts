@@ -1,6 +1,6 @@
 import { Hex } from 'viem';
 
-import { BITGET_ADDRESS_EMPTY_ERROR } from '../../../../constants';
+import { BITGET_ADDRESS_EMPTY_ERROR, WALLETS_REQUIRED } from '../../../../constants';
 import {
   getGasOptions,
   TransactionCallbackParams,
@@ -31,6 +31,13 @@ const makeBitgetDeposit = async (params: TransactionCallbackParams): Transaction
     gweiRange,
     minTokenBalance,
   } = params;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
 
   const toAddress = wallet.bitgetAddress as Hex | undefined;
   if (!toAddress) {

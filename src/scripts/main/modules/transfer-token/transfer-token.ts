@@ -1,7 +1,7 @@
 import { Hex } from 'viem';
 
 import { defaultTokenAbi } from '../../../../clients/abi';
-import { EMPTY_PRIV_KEY, SECOND_ADDRESS_EMPTY_ERROR } from '../../../../constants';
+import { EMPTY_PRIV_KEY, SECOND_ADDRESS_EMPTY_ERROR, WALLETS_REQUIRED } from '../../../../constants';
 import {
   transactionWorker,
   addNumberPercentage,
@@ -33,6 +33,14 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
     balanceToLeft,
     minAmount,
   } = params;
+
+  if (!wallet) {
+    return {
+      status: 'critical',
+      message: WALLETS_REQUIRED,
+    };
+  }
+
   const { walletClient, explorerLink, publicClient } = client;
   const { secondAddress } = wallet;
 

@@ -7,7 +7,7 @@ import { BnbTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class OpBnbClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(opBNB, logger, Networks.OP_BNB, wallet);
   }
 

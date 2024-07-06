@@ -7,7 +7,7 @@ import { EvmTokens, Networks, WalletData } from '../types';
 import { DefaultClient } from './default-client';
 
 export class ZkFairClient extends DefaultClient {
-  constructor(logger: LoggerType, wallet: WalletData) {
+  constructor(logger: LoggerType, wallet?: WalletData) {
     super(zkFair, logger, Networks.ZKFAIR, wallet);
   }
 

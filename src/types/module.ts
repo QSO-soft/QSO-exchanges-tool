@@ -52,6 +52,7 @@ export interface ExtraModuleParams {
   contractAddress?: HexOrNative;
   contractAddresses?: Hex[];
   projectAddresses?: Hex[];
+  walletAddress?: Hex;
 
   useUsd?: boolean;
   // Swaps / Liquidity / Lending
@@ -133,7 +134,7 @@ export type TransformedModuleParams = Omit<ModuleParams, 'count'> & {
   proxyObject?: ProxyObject;
   isReverse?: boolean;
   logger: LoggerType;
-  wallet: WalletData;
+  wallet?: WalletData;
 
   dbSource: DataSource;
   isInnerWorker?: boolean;
