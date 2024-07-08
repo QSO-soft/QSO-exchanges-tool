@@ -70,7 +70,7 @@ export const makeBinanceWithdraw = async (
 
   let binanceProxyAgent;
   if (BINANCE.proxy) {
-    binanceProxyAgent = await getProxyAgent(BINANCE.proxy, wallet.updateProxyLink, logger);
+    binanceProxyAgent = await getProxyAgent(BINANCE.proxy, '', logger);
   }
 
   let binanceWithdrawNetwork = binanceWithdrawNetworkProp;
