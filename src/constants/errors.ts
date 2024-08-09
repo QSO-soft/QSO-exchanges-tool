@@ -27,7 +27,7 @@ export const EMPTY_CAPMONSTER_KEY_ERROR =
   'It requires capmonster captcha key. Please provide CAPMONSTER_CAPTCHA_KEY to the global.js';
 export const NO_MAIL_TO_USE = 'You dont have not used mails';
 export const SECOND_ADDRESS_EMPTY_ERROR =
-  'You dont have a second address to transfer BNB. Please add it to the _inputs/csv/wallets.csv';
+  'You dont have a second address for transfer. Please add it to the _inputs/csv/wallets.csv';
 export const BITGET_ADDRESS_EMPTY_ERROR =
   'You dont have a Bitget address for transfer. Please add it to the _inputs/csv/wallets.csv';
 export const ACTIVITY_ENDED_ERROR = 'Activity end';

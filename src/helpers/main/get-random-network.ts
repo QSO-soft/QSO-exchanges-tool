@@ -19,6 +19,7 @@ interface GetRandomNetwork {
   minTokenBalance?: number;
   useUsd?: boolean;
   isWithdrawal?: boolean;
+  destinationNetwork?: SupportedNetworks;
 }
 export const getRandomNetwork = async ({
   wallet,
@@ -32,9 +33,13 @@ export const getRandomNetwork = async ({
   token,
   client,
   isNativeToken,
+  destinationNetwork,
   isWithdrawal = true,
 }: GetRandomNetwork) => {
-  const shuffledNetworks = shuffleArray(randomNetworks);
+  let shuffledNetworks = shuffleArray(randomNetworks);
+  if (destinationNetwork) {
+    shuffledNetworks = shuffledNetworks.filter((network) => network !== destinationNetwork);
+  }
 
   let currentNetwork = network;
   let currentToken = token;

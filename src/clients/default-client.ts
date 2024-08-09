@@ -38,7 +38,7 @@ const TRANSPORT_RETRY_CONFIG = {
 };
 const WAIT_TX_CONFIG = {
   pollingInterval: 30000,
-  timeout: 90000,
+  timeout: 120000,
   // retryDelay: 1000,
   // retryCount: 10,
 };

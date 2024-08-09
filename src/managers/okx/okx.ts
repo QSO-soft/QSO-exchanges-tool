@@ -184,7 +184,7 @@ export class Okx {
     token,
     network,
     minAmount,
-  }: ExecWithdrawParams): Promise<{ id: string; amount: number }> {
+  }: ExecWithdrawParams): Promise<{ id: string; logsAmount: string }> {
     const logTemplate: LoggerData = {
       action: 'execOkxWithdraw',
     };
@@ -235,14 +235,15 @@ export class Okx {
         throw new Error('Unable to execute withdrawal');
       }
 
-      this.logger?.success(
-        `${getTrimmedLogsAmount(+amount, token)} were send. We are waiting for the withdrawal from OKX, relax...`,
-        {
-          ...logTemplate,
-        }
-      );
+      const logsAmount = getTrimmedLogsAmount(+amount, token);
+      this.logger?.success(`${logsAmount} were send. We are waiting for the withdrawal from OKX, relax...`, {
+        ...logTemplate,
+      });
 
-      return { id: res.id, amount: +amount };
+      return {
+        id: res.id,
+        logsAmount,
+      };
     } catch (e) {
       const errorMessage = (e as Error)?.message ?? 'unknown error';
 
@@ -419,7 +420,8 @@ export class Okx {
     const config = await this.getConfig({ requestPath });
     const response = await axios.get(`${OKX_DOMAIN}${requestPath}`, config);
 
-    return response.data.data;
+    const balance = response.data?.data?.[0];
+    return balance?.bal ? +balance.bal : 0;
   }
   async getMainAccountBalances() {
     const requestPath = '/api/v5/asset/balances';

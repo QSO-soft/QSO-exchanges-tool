@@ -3,7 +3,6 @@ import { Hex } from 'viem';
 import { defaultTokenAbi } from '../../../../clients/abi';
 import { EMPTY_PRIV_KEY, SECOND_ADDRESS_EMPTY_ERROR, WALLETS_REQUIRED } from '../../../../constants';
 import {
-  transactionWorker,
   addNumberPercentage,
   calculateAmount,
   decimalToInt,
@@ -15,6 +14,7 @@ import {
   intToDecimal,
   TransactionCallbackParams,
   TransactionCallbackReturn,
+  transactionWorker,
 } from '../../../../helpers';
 import { Tokens, TransformedModuleParams } from '../../../../types';
 
@@ -81,7 +81,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
       message: `Balance ${getTrimmedLogsAmount(
         intBalance,
         tokenSymbol
-      )}} in ${network} is lower than minTokenBalance ${minTokenBalance}`,
+      )} in ${network} is lower than minTokenBalance ${minTokenBalance}`,
     };
   }
 
@@ -187,6 +187,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
     txHash,
     explorerLink,
     status: 'success',
+    tgMessage: `Transferred ${logCalculatedAmount} in ${network} to ${secondAddress}...`,
   };
 };
 

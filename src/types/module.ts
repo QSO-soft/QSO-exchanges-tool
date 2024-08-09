@@ -20,6 +20,7 @@ export type ModuleNames =
   | 'gate-withdraw'
   | 'okx-withdraw'
   | 'okx-collect'
+  | 'okx-wait-balance'
   | 'transfer-token'
   | 'balance-checker'
   | 'check-native-balance'
@@ -93,6 +94,7 @@ export interface ExtraModuleParams {
   minBalanceByToken?: MinTokenBalanceSettings;
   minNativeBalance?: number;
   minDestTokenBalance?: number;
+  minDestTokenNetwork?: SupportedNetworks;
   minDestNativeBalance?: number;
   balanceToLeft?: NumberRange;
 

@@ -2,7 +2,7 @@ import settings from '../../_inputs/settings/settings';
 import { NumberRange, TransformedModuleConfig, WalletWithModules } from '../../types';
 import { getAllNativePrices } from '../currency-handlers';
 import { saveFailedWalletsToCSV } from '../file-handlers';
-import { getSavedModules, updateSavedModulesFinishStatus } from '../modules/save-modules';
+import { getSavedModules, savePreparedModules, updateSavedModulesFinishStatus } from '../modules/save-modules';
 import { initLocalLogger, showLogPreparedModules } from '../show-logs';
 import { getDateDiff } from '../utils';
 import { prepareSavedWalletsWithModules, prepareWalletsData } from '../wallets';
@@ -52,11 +52,11 @@ export const restartLast = async ({
       `We are starting to work on [${modulesDataToRestart.length}] ${isEmptyWalletsMode ? 'modules' : 'wallets'}`
     );
 
-    // savePreparedModules({
-    //   walletsWithModules: walletsWithModulesToRestart,
-    //   route: lastRoute,
-    //   projectName,
-    // });
+    savePreparedModules({
+      modulesData: modulesDataToRestart,
+      routeName,
+      projectName,
+    });
 
     let currentThreads = 1;
     if (threads === 'all') {

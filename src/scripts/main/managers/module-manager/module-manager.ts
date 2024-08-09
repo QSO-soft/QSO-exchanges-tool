@@ -11,6 +11,7 @@ import {
   execMakeGateWithdraw,
   execMakeTransferToken,
   execOkxCollect,
+  execOkxWaitBalance,
   execOkxWithdraw,
 } from '../../modules';
 
@@ -27,6 +28,8 @@ export class ModuleManager extends DefaultModuleManager {
         return execOkxWithdraw;
       case 'okx-collect':
         return execOkxCollect;
+      case 'okx-wait-balance':
+        return execOkxWaitBalance;
       case 'bitget-withdraw':
         return execMakeBitgetWithdraw;
       case 'bitget-deposit':

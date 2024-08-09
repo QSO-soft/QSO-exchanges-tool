@@ -123,6 +123,25 @@ export const defaultModuleConfigs: DefaultModuleConfigs = {
     // Использовать ли USD как значения балансов, amount
     useUsd: false,
   },
+  'okx-wait-balance': {
+    count: [1, 1],
+    indexGroup: 0,
+
+    // Минимальный баланс токенов для ожидания
+    waitBalance: 1,
+
+    // Токены баланс которых будет ожидать
+    collectTokens: ['ETH'],
+
+    // Время в секундах, которое будет ожидать между проверками баланса
+    waitTime: 60 * 5, // 5m
+
+    // Аккаунты для которых будет выполняться модуль
+    // Формат: ['accountName1', 'accountName2', ...]
+    // Названия должны соответствовать таковым в global.js, в противном случае они будут проигнорированы
+    // Так-же можно указать 'all' и тогда модуль выполнится для всех аккаунтов в global.js
+    okxAccounts: 'all',
+  },
 
   // ============== Binance ==============
   'binance-withdraw': {

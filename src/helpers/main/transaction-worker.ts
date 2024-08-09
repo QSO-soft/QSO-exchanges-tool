@@ -11,7 +11,7 @@ import {
   WARNING_ERRORS_MAP,
 } from '../../constants';
 import { LoggerData } from '../../logger';
-import { MaxGas, ModuleNames, NumberRange, WorkerResponse } from '../../types';
+import { MaxGas, NumberRange, WorkerResponse } from '../../types';
 import { getClientByNetwork } from '../clients';
 import { waitGas, waitGasMultiple } from '../gas';
 import { updateSavedModulesCount } from '../modules/save-modules';
@@ -96,17 +96,6 @@ export const transactionWorker = async (props: TransactionWorkerPropsWithCallbac
           });
         }
 
-        // TODO: move it to constants later
-        const modulesWithoutAutogas: ModuleNames[] = [
-          'binance-withdraw',
-          'okx-withdraw',
-          'okx-collect',
-          'bitget-collect',
-          'bitget-withdraw',
-          'bitget-wait-balance',
-        ];
-        const moduleName = props.moduleName;
-
         const params = {
           ...props,
           network: currentNetwork,
@@ -116,13 +105,6 @@ export const transactionWorker = async (props: TransactionWorkerPropsWithCallbac
         };
 
         let response;
-        // const shouldRunAutoGas = !modulesWithoutAutogas.includes(moduleName);
-        // if (shouldRunAutoGas) {
-        //   const autoGasRes = await runAutoGas(params);
-        //   if (autoGasRes) {
-        //     response = autoGasRes;
-        //   }
-        // }
 
         if (!response) {
           response = await transactionCallback(params);
@@ -192,11 +174,13 @@ export const transactionWorker = async (props: TransactionWorkerPropsWithCallbac
           errorMessage =
             e.response?.data.msg ||
             e.response?.data.message ||
-            e.response?.data.error ||
             e.response?.data.error?.message ||
             e.response?.data.error?.msg ||
             e.response?.data.errors?.[0]?.message ||
             e.response?.data.errors?.[0]?.msg ||
+            e.response?.data.error?.[0]?.message ||
+            e.response?.data.error?.[0]?.msg ||
+            e.response?.data.error ||
             errorMessage;
         }
 

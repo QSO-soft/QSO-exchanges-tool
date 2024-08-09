@@ -13,7 +13,7 @@ import {
   TransactionCallbackResponse,
   TransactionCallbackReturn,
   transactionWorker,
-  getLogMsgWalletToppedUpTg,
+  getTrimmedLogsAmount,
 } from '../../../../helpers';
 import { LoggerData } from '../../../../logger';
 import { Okx } from '../../../../managers/okx';
@@ -49,7 +49,8 @@ export const makeOkxWithdraw = async (
     preparedTopUpOptions,
     withdrawAdditionalPercent,
     withMinAmountError,
-    proxyAgent,
+    minDestTokenBalance,
+    minDestTokenNetwork,
   } = props;
 
   if (!wallet) {
@@ -57,6 +58,33 @@ export const makeOkxWithdraw = async (
       status: 'critical',
       message: WALLETS_REQUIRED,
     };
+  }
+
+  if (minDestTokenBalance) {
+    const destClient = getClientByNetwork(minDestTokenNetwork, logger, wallet);
+    const nativeToken = destClient.chainData.nativeCurrency.symbol as Tokens;
+    const tokenToCheck = tokenToWithdrawProp || nativeToken;
+
+    const {
+      tokenContractInfo,
+      isNativeToken: isNativeTokenToWithdraw,
+      token,
+    } = getContractData({
+      nativeToken,
+      network: minDestTokenNetwork,
+      token: tokenToCheck,
+    });
+
+    const balance = await destClient.getNativeOrContractBalance(isNativeTokenToWithdraw, tokenContractInfo);
+    if (balance.int >= minDestTokenBalance) {
+      return {
+        status: 'passed',
+        message: `Balance [${getTrimmedLogsAmount(
+          balance.int,
+          token
+        )}] in ${minDestTokenNetwork} is already equal or more then minDestTokenBalance [${minDestTokenBalance} ${token}]`,
+      };
+    }
   }
 
   let okxWithdrawNetwork = okxWithdrawNetworkProp;
@@ -99,9 +127,9 @@ export const makeOkxWithdraw = async (
     tokenToWithdraw = res.token;
   }
 
-  const walletAddress = wallet.walletAddress;
-
   const { currentExpectedBalance, isTopUpByExpectedBalance } = getExpectedBalance(expectedBalance);
+
+  const walletAddress = wallet.walletAddress;
 
   const topUpOptions =
     preparedTopUpOptions ||
@@ -141,7 +169,7 @@ export const makeOkxWithdraw = async (
 
   if (shouldTopUp) {
     try {
-      const { id, amount: sentAmount } = await okx.execWithdraw({
+      const { id, logsAmount } = await okx.execWithdraw({
         walletAddress,
         token: tokenToWithdraw,
         network: okxWithdrawNetwork,
@@ -170,18 +198,15 @@ export const makeOkxWithdraw = async (
         };
       }
 
+      const message = getLogMsgWalletToppedUp({
+        cex: 'OKX',
+        balance: currentBalance.int,
+        token: tokenToWithdraw,
+      });
       return {
         status: 'success',
-        message: getLogMsgWalletToppedUp({
-          cex: 'OKX',
-          balance: currentBalance.int,
-          token: tokenToWithdraw,
-        }),
-        tgMessage: getLogMsgWalletToppedUpTg({
-          amount: sentAmount,
-          balance: currentBalance.int,
-          token: tokenToWithdraw,
-        }),
+        message,
+        tgMessage: `${okxWithdrawNetwork} | Withdrawn: ${logsAmount}`,
       };
     } catch (err) {
       const errorMessage = (err as Error).message;

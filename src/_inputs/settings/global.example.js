@@ -34,7 +34,7 @@ export const OKX = {
     },
   },
 
-  // Пример: login:password@ip:port
+  // Пример: http://login:pass@ip:port
   proxy: '',
 };
 
@@ -45,7 +45,7 @@ export const BINANCE = {
     secret: '',
   },
 
-  // Пример: login:password@ip:port
+  // Пример: http://login:pass@ip:port
   proxy: '',
 };
 
@@ -54,7 +54,7 @@ export const BITGET = {
   secret: '',
   passphrase: '',
 
-  // Пример: login:password@ip:port
+  // Пример: http://login:pass@ip:port
   proxy: '',
 };
 
@@ -64,6 +64,7 @@ export const GATE = {
     secret: '',
   },
 
+  // Пример: http://login:pass@ip:port
   proxy: '',
 };
 
@@ -137,6 +138,7 @@ export const RPC = {
   aptos: '',
   starknet: '',
 };
+
 // Секретная фраза, которая будет использоваться для шифрования ваших приватных данных
 // Эта же фраза будет использоваться и для их расшифровки по этому не удаляйте её!
 // Пример: 'abracadabra209581kdhask'

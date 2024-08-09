@@ -6,7 +6,6 @@ import { BINANCE } from '../../../../_inputs/settings';
 import { UNABLE_GET_WITHDRAW_FEE_ERROR, WAIT_TOKENS, WALLETS_REQUIRED } from '../../../../constants';
 import { BINANCE_API_URL, BINANCE_PUBLIC_API_URL } from '../../../../constants/urls';
 import {
-  GetTopUpOptionsResult,
   addNumberPercentage,
   getAxiosConfig,
   getClientByNetwork,
@@ -23,7 +22,7 @@ import {
   TransactionCallbackReturn,
   transactionWorker,
   getContractData,
-  getLogMsgWalletToppedUpTg,
+  GetTopUpOptionsResult,
 } from '../../../../helpers';
 import { LoggerData } from '../../../../logger';
 import { BinanceNetworks, BinanceTokenData, ProxyAgent, Tokens, TransformedModuleParams } from '../../../../types';
@@ -59,6 +58,8 @@ export const makeBinanceWithdraw = async (
     withdrawAdditionalPercent,
     withMinAmountError,
     randomBinanceWithdrawNetworks,
+    minDestTokenBalance,
+    minDestTokenNetwork,
   } = props;
 
   if (!wallet) {
@@ -66,6 +67,33 @@ export const makeBinanceWithdraw = async (
       status: 'critical',
       message: WALLETS_REQUIRED,
     };
+  }
+
+  if (minDestTokenBalance) {
+    const destClient = getClientByNetwork(minDestTokenNetwork, logger, wallet);
+    const nativeToken = destClient.chainData.nativeCurrency.symbol as Tokens;
+    const tokenToCheck = tokenToWithdrawProp || nativeToken;
+
+    const {
+      tokenContractInfo,
+      isNativeToken: isNativeTokenToWithdraw,
+      token,
+    } = getContractData({
+      nativeToken,
+      network: minDestTokenNetwork,
+      token: tokenToCheck,
+    });
+
+    const balance = await destClient.getNativeOrContractBalance(isNativeTokenToWithdraw, tokenContractInfo);
+    if (balance.int >= minDestTokenBalance) {
+      return {
+        status: 'passed',
+        message: `Balance [${getTrimmedLogsAmount(
+          balance.int,
+          token
+        )}] in ${minDestTokenNetwork} is already equal or more then minDestTokenBalance [${minDestTokenBalance} ${token}]`,
+      };
+    }
   }
 
   let binanceProxyAgent;
@@ -113,9 +141,9 @@ export const makeBinanceWithdraw = async (
     tokenToWithdraw = res.token;
   }
 
-  const walletAddress = wallet.walletAddress;
-
   const { currentExpectedBalance, isTopUpByExpectedBalance } = getExpectedBalance(expectedBalance);
+
+  const walletAddress = wallet.walletAddress;
 
   const fee = await getFee(binanceWithdrawNetwork, tokenToWithdraw, binanceProxyAgent?.proxyAgent);
   if (!fee) {
@@ -169,7 +197,7 @@ export const makeBinanceWithdraw = async (
   if (shouldTopUp) {
     const amount = +(
       withdrawAdditionalPercent ? addNumberPercentage(currentAmount, withdrawAdditionalPercent) : currentAmount
-    ).toFixed(8);
+    ).toFixed(6);
 
     const correctNetwork = NETWORK_MAP[binanceWithdrawNetwork] || binanceWithdrawNetwork;
     const currentDate = Date.now();
@@ -203,15 +231,10 @@ export const makeBinanceWithdraw = async (
       config
     );
 
-    logger.success(
-      `[${getTrimmedLogsAmount(
-        amount,
-        tokenToWithdraw
-      )}] were send. We are waiting for the withdrawal from Binance, relax...`,
-      {
-        ...logTemplate,
-      }
-    );
+    const logsAmount = getTrimmedLogsAmount(amount, tokenToWithdraw);
+    logger.success(`[${logsAmount}] were send. We are waiting for the withdrawal from Binance, relax...`, {
+      ...logTemplate,
+    });
 
     let currentBalance = await client.getNativeOrContractBalance(isNativeTokenToWithdraw, tokenContractInfo);
 
@@ -226,19 +249,16 @@ export const makeBinanceWithdraw = async (
       }
     }
 
+    const message = getLogMsgWalletToppedUp({
+      cex: 'Binance',
+      balance: currentBalance.int,
+      token: tokenToWithdraw,
+    });
     if (data.id) {
       return {
         status: 'success',
-        message: getLogMsgWalletToppedUp({
-          cex: 'Binance',
-          balance: currentBalance.int,
-          token: tokenToWithdraw,
-        }),
-        tgMessage: getLogMsgWalletToppedUpTg({
-          amount,
-          balance: currentBalance.int,
-          token: tokenToWithdraw,
-        }),
+        message,
+        tgMessage: `${binanceWithdrawNetwork} | Withdrawn: ${logsAmount}`,
       };
     }
   }
