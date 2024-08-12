@@ -347,7 +347,7 @@ export class Okx {
     } catch (error) {
       const msg = this.getTransferErrorMessage(error);
       if (msg) {
-        this.logger?.error(`Unable to transfer ${symbol}: ${msg}`);
+        this.logger?.error(`Unable to transfer from sub acc ${symbol}: ${msg}`);
       }
     }
   }
@@ -377,7 +377,7 @@ export class Okx {
     } catch (error) {
       const msg = this.getTransferErrorMessage(error);
       if (msg) {
-        this.logger?.error(`Unable to transfer ${symbol}: ${msg}`);
+        this.logger?.error(`Unable to transfer from trading acc ${symbol}: ${msg}`);
       }
     }
   }
@@ -407,7 +407,7 @@ export class Okx {
     } catch (error) {
       const msg = this.getTransferErrorMessage(error);
       if (msg) {
-        this.logger?.error(`Unable to transfer ${symbol}: ${msg}`);
+        this.logger?.error(`Unable to transfer to another acc ${symbol}: ${msg}`);
       }
     }
   }
@@ -509,7 +509,7 @@ export class Okx {
 
         for (const { availBal, ccy } of balances) {
           if ((!tokens?.length || tokens.includes(ccy)) && +availBal > 0) {
-            await this.transferBalanceFromSubToMain({ amount: availBal, subAccName, symbol: ccy });
+            await this.transferBalanceFromSubToMain({ amount: availBal, subAccName: subAcct, symbol: ccy });
 
             await sleep(0.1);
           }
