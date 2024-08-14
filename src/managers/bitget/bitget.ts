@@ -343,14 +343,14 @@ export class Bitget {
             if (err instanceof AxiosError) {
               if ((err.response?.data?.msg || '').includes('Parameter amount error')) {
                 this.logger.warning(`Amount [${logAmount}] is too low to make transfer`);
-                return;
+                continue;
               }
 
               if (
                 (err.response?.data?.msg || '').includes('The 0USDT received in the red envelope can be transferred')
               ) {
                 this.logger.warning(`Amount [${logAmount}] is frozen`);
-                return;
+                continue;
               }
             }
             throw err;
