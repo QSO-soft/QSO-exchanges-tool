@@ -345,6 +345,13 @@ export class Bitget {
                 this.logger.warning(`Amount [${logAmount}] is too low to make transfer`);
                 return;
               }
+
+              if (
+                (err.response?.data?.msg || '').includes('The 0USDT received in the red envelope can be transferred')
+              ) {
+                this.logger.warning(`Amount [${logAmount}] is frozen`);
+                return;
+              }
             }
             throw err;
           }
