@@ -13,4 +13,5 @@ export const BINANCE_NETWORK_MAP: Record<BinanceNetworks, string> = {
   celo: 'CELO',
   klay: 'KLAY',
   fantom: 'FTM',
+  scroll: 'SCROLL'
 };

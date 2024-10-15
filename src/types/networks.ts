@@ -77,6 +77,7 @@ export const BINANCE_NETWORKS = [
   'fantom',
   'celo',
   'klay',
+  'scroll'
 ] as const;
 
 export type BinanceNetworks = (typeof BINANCE_NETWORKS)[number];
