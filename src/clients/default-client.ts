@@ -11,10 +11,10 @@ import {
   PublicClient,
   TransactionReceipt,
 } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
 
 import settings from '../_inputs/settings/settings';
-import { EMPTY_PRIV_KEY, WALLET_ADDRESS_EMPTY, WALLETS_REQUIRED } from '../constants';
+import { EMPTY_PRIV_KEY_OR_MNEMONIC, WALLET_ADDRESS_EMPTY, WALLETS_REQUIRED } from '../constants';
 import {
   convertPrivateKey,
   decimalToInt,
@@ -45,6 +45,7 @@ const WAIT_TX_CONFIG = {
 
 export class DefaultClient {
   privateKey?: Hex;
+  mnemonic?: string;
   rpcs: string[];
   publicClient: PublicClient;
   walletClient?: WalletClient;
@@ -60,6 +61,7 @@ export class DefaultClient {
     this.chainData = chainData;
     this.wallet = wallet;
     this.privateKey = convertPrivateKey(wallet?.privKey);
+    this.mnemonic = wallet?.mnemonic;
     this.network = network;
     this.explorerLink = getExplorerLinkByNetwork(network);
     this.rpcs = getAllRpcs(network);
@@ -101,10 +103,10 @@ export class DefaultClient {
   }
 
   private getWalletClient(): WalletClient | undefined {
-    if (this.privateKey) {
+    if (this.mnemonic || this.privateKey) {
       return createWalletClient({
         chain: this.chainData,
-        account: privateKeyToAccount(this.privateKey),
+        account: this.mnemonic ? mnemonicToAccount(this.mnemonic) : privateKeyToAccount(this.privateKey || '0x'),
         transport: this.getTransport(this.currentRpc),
       });
     }
@@ -204,7 +206,7 @@ export class DefaultClient {
       });
 
       if (!txHash) {
-        throw new Error(EMPTY_PRIV_KEY);
+        throw new Error(EMPTY_PRIV_KEY_OR_MNEMONIC);
       }
 
       const waitedTx = await this.waitTxReceipt(txHash);

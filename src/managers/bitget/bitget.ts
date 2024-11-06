@@ -6,7 +6,7 @@ import { Hex } from 'viem';
 
 import { BITGET } from '../../_inputs/settings';
 import { defaultTokenAbi } from '../../clients/abi';
-import { BITGET_KEYS_ERROR, EMPTY_PRIV_KEY, WAIT_TOKENS } from '../../constants';
+import { BITGET_KEYS_ERROR, EMPTY_PRIV_KEY_OR_MNEMONIC, WAIT_TOKENS } from '../../constants';
 import {
   calculateAmount,
   ClientType,
@@ -166,7 +166,7 @@ export class Bitget {
 
     const { walletClient } = client;
     if (!walletClient) {
-      throw new Error(EMPTY_PRIV_KEY);
+      throw new Error(EMPTY_PRIV_KEY_OR_MNEMONIC);
     }
 
     const isNativeToken = token === this.client.chainData.nativeCurrency.symbol;
@@ -297,22 +297,6 @@ export class Bitget {
   public async makeTransferFromSubsToMain({ tokens }: BitgetTransferFromAccsToMain) {
     const accountInfo = await this.getInfo();
     const userId = accountInfo.userId;
-
-    // const res: any = await this.makeRequest({
-    //   method: 'GET',
-    //   requestPath: 'spot/v1/public/currencies',
-    //   version: 1,
-    // });
-    // const data = uniq(
-    //   res
-    //     .map(({ chains }: any) => chains)
-    //     .flat()
-    //     .map(({ chain }: { chain: string }) => chain)
-    // );
-    // const chunked = chunkArray(data, 50);
-    // for (const chunk of chunked) {
-    //   console.log(chunk);
-    // }
 
     const subAccountAssets = await this.getSubAccAssets();
     const isAllTokens = !tokens.length;

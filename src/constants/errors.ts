@@ -7,7 +7,7 @@ export const WALLET_ADDRESS_EMPTY = 'Wallet address is not provided';
 
 export const OKX_WL_ERROR = 'Wallet was not whitelisted in OKX';
 export const LOW_BALANCE_ERROR = 'Balance is too low to make transaction. Please topUp your wallet';
-export const EMPTY_PRIV_KEY = 'Please add a private key to your wallets.csv';
+export const EMPTY_PRIV_KEY_OR_MNEMONIC = 'Please add a private key or mnemonic to your wallets.csv';
 export const MIN_TOKEN_BALANCE_ERROR = 'Balance is lower than minTokenBalance';
 export const MERKLY_LOW_BALANCE_ERROR =
   'Balance is too low to make transaction. You need to topUp wallet or decrease minAndMaxAmount';
@@ -82,7 +82,7 @@ export const CRITICAL_ERRORS_MAP = {
   [GATE_WL_ERROR]: GATE_WL_ERROR,
   [GATE_EMPTY_KEYS_ERROR]: GATE_EMPTY_KEYS_ERROR,
   [NOT_ENOUGH_FUNDS_FOR_FEE_ERROR]: NOT_ENOUGH_FUNDS_FOR_FEE_ERROR,
-  [EMPTY_PRIV_KEY]: EMPTY_PRIV_KEY,
+  [EMPTY_PRIV_KEY_OR_MNEMONIC]: EMPTY_PRIV_KEY_OR_MNEMONIC,
   // [BITGET_WL_ERROR]: BITGET_WL_ERROR,
 };
 

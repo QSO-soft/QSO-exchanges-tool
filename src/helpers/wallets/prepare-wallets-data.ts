@@ -29,7 +29,7 @@ export const formatId = (inputString: string, index: number): string => {
 };
 
 export const prepareRowFromCSV = ({ walletData, logger, client, index }: PrepareRowFromCsvArgs) => {
-  const { id, privKey, ...restRow } = walletData;
+  const { id, privKey, mnemonic, ...restRow } = walletData;
 
   let decryptedPrivKey = privKey;
   // PrivKey already was encrypted last time and we need to decrypt that to get wallet address
@@ -37,15 +37,23 @@ export const prepareRowFromCSV = ({ walletData, logger, client, index }: Prepare
     decryptedPrivKey = decryptKey(privKey);
   }
 
+  let decryptedMnemonic = mnemonic;
+  // Mnemonic already was encrypted last time and we need to decrypt that to get wallet address
+  if (mnemonic && mnemonic.split(' ').length <= 1) {
+    decryptedMnemonic = decryptKey(mnemonic);
+  }
+
   const walletAddress =
     new client(logger, {
       ...walletData,
       privKey: decryptedPrivKey,
+      mnemonic: decryptedMnemonic,
     }).getWalletAddress() || walletData.walletAddress;
 
   return {
     ...restRow,
     privKey,
+    mnemonic,
     id: formatId(id, index),
     walletAddress,
   };
@@ -94,18 +102,24 @@ export const prepareFromCsv = async ({ logger, projectName, client }: PrepareFro
       return;
     }
 
-    const dataToSaveInCsv: WalletData[] = dataToSave.map(({ id, walletAddress, privKey, ...rest }) => {
+    const dataToSaveInCsv: WalletData[] = dataToSave.map(({ id, walletAddress, privKey, mnemonic, ...rest }) => {
       let encryptedPrivKey = privKey;
-
       // We need to encrypt privKey to push into csv and json
       if (privKey && privKey.length <= PRIV_KEY_LENGTH) {
         encryptedPrivKey = encryptKey(privKey);
+      }
+
+      let encryptedMnemonic = mnemonic;
+      // We need to encrypt mnemonic to push into csv and json
+      if (mnemonic && mnemonic.split(' ').length > 1) {
+        encryptedMnemonic = encryptKey(mnemonic);
       }
 
       return {
         id,
         walletAddress,
         privKey: encryptedPrivKey,
+        mnemonic: encryptedMnemonic,
         ...rest,
       };
     });

@@ -54,6 +54,6 @@ fi
 if [ ! -s src/_outputs/csv/failed-wallets.csv ]
   then :
     echo "\nCreating failed-wallets.csv in src/_outputs/csv/"
-    touch src/_outputs/csv/failed-wallets.csv && echo "id,walletAddress,privKey,failReason" >> src/_outputs/csv/failed-wallets.csv
+    touch src/_outputs/csv/failed-wallets.csv && echo "id,walletAddress,privKey,mnemonic,failReason" >> src/_outputs/csv/failed-wallets.csv
 fi
 

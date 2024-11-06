@@ -32,10 +32,15 @@ export const getClientByNetwork = (networkName: SupportedNetworks, logger: Logge
     if (wallet.privKey) {
       decryptedPrivKey = decryptKey(wallet.privKey);
     }
+    let decryptedMnemonic;
+    if (wallet.mnemonic) {
+      decryptedMnemonic = decryptKey(wallet.mnemonic);
+    }
 
     walletWithDecryptedPrivKey = {
       ...wallet,
       privKey: decryptedPrivKey,
+      mnemonic: decryptedMnemonic,
     };
   }
 

@@ -4,7 +4,7 @@ import { CryptoCompareResult } from '../../helpers';
 import { NumberRange, Route, SupportedNetworks, TransformedModuleConfig, WalletWithModules } from '../../types';
 
 export interface IModuleManager {
-  totalCount: number;
+  walletsTotalCount: number;
   projectName: string;
   baseNetwork: SupportedNetworks;
   dbSource: DataSource;
