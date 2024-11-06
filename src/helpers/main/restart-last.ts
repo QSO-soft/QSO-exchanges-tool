@@ -96,7 +96,7 @@ export const restartLast = async ({
             ...baseStartModulesArgs,
             module,
             currentIndex,
-            totalCount: modulesDataToRestart.length,
+            walletsTotalCount: modulesDataToRestart.length,
           }),
         logger,
       });
@@ -110,7 +110,7 @@ export const restartLast = async ({
           startModulesCallback({
             ...baseStartModulesArgs,
             walletWithModules,
-            totalCount: modulesDataToRestart.length,
+            walletsTotalCount: modulesDataToRestart.length,
             currentIndex,
             delayBetweenWallets,
           }),

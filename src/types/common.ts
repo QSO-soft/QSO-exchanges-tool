@@ -16,6 +16,7 @@ export type MoreOrLessStringRange = [`>${number}`, `<${number}`];
 
 export interface WalletData {
   privKey?: string;
+  mnemonic?: string;
   walletAddress: Hex;
   id: string;
   secondAddress?: string;

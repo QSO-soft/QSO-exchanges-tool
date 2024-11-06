@@ -1,7 +1,7 @@
 import { Hex } from 'viem';
 
 import { defaultTokenAbi } from '../../../../clients/abi';
-import { EMPTY_PRIV_KEY, SECOND_ADDRESS_EMPTY_ERROR, WALLETS_REQUIRED } from '../../../../constants';
+import { EMPTY_PRIV_KEY_OR_MNEMONIC, SECOND_ADDRESS_EMPTY_ERROR, WALLETS_REQUIRED } from '../../../../constants';
 import {
   addNumberPercentage,
   calculateAmount,
@@ -45,7 +45,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
   const { secondAddress } = wallet;
 
   if (!walletClient) {
-    throw new Error(EMPTY_PRIV_KEY);
+    throw new Error(EMPTY_PRIV_KEY_OR_MNEMONIC);
   }
 
   if (!secondAddress) {
@@ -97,7 +97,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
 
     if (intBalance - balanceToLeftInt <= 0) {
       return {
-        status: 'warning',
+        status: 'error',
         message: `Balance is ${getTrimmedLogsAmount(
           intBalance,
           tokenSymbol
@@ -116,7 +116,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
 
   if (minAmount && amount < minAmount) {
     return {
-      status: 'warning',
+      status: 'error',
       message: `Calculated amount [${logCalculatedAmount}] is lower than provided minAmount [${minAmount}]`,
     };
   }

@@ -163,7 +163,7 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
               ...baseStartModulesArgs,
               module,
               currentIndex,
-              totalCount: modulesData.length,
+              walletsTotalCount: modulesData.length,
             }),
           logger,
         });
@@ -177,7 +177,7 @@ export const runMainScript = async (props: MainScriptArgs & GetUpdatedModulesCal
             startModulesCallback({
               ...baseStartModulesArgs,
               walletWithModules,
-              totalCount: modulesData.length,
+              walletsTotalCount: modulesData.length,
               currentIndex,
               delayBetweenWallets,
             }),

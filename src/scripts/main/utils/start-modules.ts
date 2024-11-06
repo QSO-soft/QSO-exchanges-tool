@@ -2,17 +2,17 @@ import { StartModulesCallbackArgs, StartSingleModuleCallbackArgs } from '../../.
 import { BASE_NETWORK, PROJECT_NAME } from '../constants';
 import { ModuleManager } from '../managers';
 
-export const startModulesCallback = ({ totalCount, dbSource, ...rest }: StartModulesCallbackArgs) =>
+export const startModulesCallback = ({ walletsTotalCount, dbSource, ...rest }: StartModulesCallbackArgs) =>
   new ModuleManager({
-    totalCount,
+    walletsTotalCount,
     projectName: PROJECT_NAME,
     baseNetwork: BASE_NETWORK,
     dbSource,
   }).startModules(rest);
 
-export const startSingleModuleCallback = ({ totalCount, dbSource, ...rest }: StartSingleModuleCallbackArgs) =>
+export const startSingleModuleCallback = ({ walletsTotalCount, dbSource, ...rest }: StartSingleModuleCallbackArgs) =>
   new ModuleManager({
-    totalCount,
+    walletsTotalCount,
     projectName: PROJECT_NAME,
     baseNetwork: BASE_NETWORK,
     dbSource,

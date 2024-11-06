@@ -51,7 +51,7 @@ export type StartModulesCallbackBaseArgs = {
   routeName: Route;
   dbSource: DataSource;
   currentIndex: number;
-  totalCount: number;
+  walletsTotalCount: number;
 };
 export type StartSingleModuleCallbackArgs = StartModulesCallbackBaseArgs & {
   module: TransformedModuleConfig;
