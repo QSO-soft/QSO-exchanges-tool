@@ -60,13 +60,13 @@ export const BITGET_WL_ERROR = 'Withdraw address is not in addressBook';
 
 // TODO: double-check okx
 export const CRITICAL_ERRORS_MAP = {
-  'The total cost (gas * gas fee + value)': LOW_BALANCE_ERROR,
+  // 'The total cost (gas * gas fee + value)': LOW_BALANCE_ERROR,
   [ANTICAPTCHA_LOW_BALANCE_ERROR]: ANTICAPTCHA_LOW_BALANCE_CUSTOM_ERROR,
   'intrinsic gas too high': LOW_BALANCE_ERROR,
   'insufficient balance for transfer': LOW_BALANCE_ERROR,
   'User has insufficient balance': LOW_BALANCE_ERROR,
   [EMPTY_BALANCE_ERROR]: LOW_BALANCE_ERROR,
-  'insufficient funds for gas + value': LOW_BALANCE_ERROR,
+  // 'insufficient funds for gas + value': LOW_BALANCE_ERROR,
   'out of gas: gas required exceeds allowance': LOW_BALANCE_ERROR,
   'API-key format invalid': INVALID_API_KEY_ERROR,
   'Invalid Api-Key ID': INVALID_API_KEY_ERROR,

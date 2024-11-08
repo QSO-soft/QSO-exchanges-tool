@@ -3,7 +3,6 @@ import { Hex } from 'viem';
 import { defaultTokenAbi } from '../../../../clients/abi';
 import { EMPTY_PRIV_KEY_OR_MNEMONIC, SECOND_ADDRESS_EMPTY_ERROR, WALLETS_REQUIRED } from '../../../../constants';
 import {
-  addNumberPercentage,
   calculateAmount,
   decimalToInt,
   getCurrentBalanceByContract,
@@ -24,7 +23,6 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
     gasLimitRange,
     minAndMaxAmount,
     usePercentBalance,
-    wallet,
     client,
     network,
     contractAddress,
@@ -32,6 +30,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
     minTokenBalance,
     balanceToLeft,
     minAmount,
+    wallet,
   } = params;
 
   if (!wallet) {
@@ -42,7 +41,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
   }
 
   const { walletClient, explorerLink, publicClient } = client;
-  const { secondAddress } = wallet;
+  const { secondAddress, walletAddress } = wallet;
 
   if (!walletClient) {
     throw new Error(EMPTY_PRIV_KEY_OR_MNEMONIC);
@@ -50,7 +49,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
 
   if (!secondAddress) {
     return {
-      status: 'error',
+      status: 'critical',
       message: SECOND_ADDRESS_EMPTY_ERROR,
     };
   }
@@ -67,14 +66,6 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
   const { symbol } = await getCurrentSymbolByContract({ client, contractAddress });
   const tokenSymbol = symbol as Tokens;
 
-  let amount = calculateAmount({
-    balance: weiBalance,
-    minAndMaxAmount,
-    usePercentBalance,
-    decimals,
-    isBigInt: true,
-  });
-
   if (intBalance < minTokenBalance) {
     return {
       status: 'passed',
@@ -84,6 +75,14 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
       )} in ${network} is lower than minTokenBalance ${minTokenBalance}`,
     };
   }
+
+  let amount = calculateAmount({
+    balance: weiBalance,
+    minAndMaxAmount,
+    usePercentBalance,
+    decimals,
+    isBigInt: true,
+  });
 
   if (balanceToLeft && balanceToLeft[0] && balanceToLeft[1]) {
     const balanceToLeftInt = getRandomNumber(balanceToLeft);
@@ -97,7 +96,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
 
     if (intBalance - balanceToLeftInt <= 0) {
       return {
-        status: 'error',
+        status: 'warning',
         message: `Balance is ${getTrimmedLogsAmount(
           intBalance,
           tokenSymbol
@@ -116,7 +115,7 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
 
   if (minAmount && amount < minAmount) {
     return {
-      status: 'error',
+      status: 'warning',
       message: `Calculated amount [${logCalculatedAmount}] is lower than provided minAmount [${minAmount}]`,
     };
   }
@@ -134,31 +133,26 @@ export const makeTransferToken = async (params: TransactionCallbackParams): Tran
   if (isNativeContract) {
     const gasPrice = await publicClient.getGasPrice();
 
-    const reversedFee = getRandomNumber([20, 25]);
+    const { maxFeePerGas } = await publicClient.estimateFeesPerGas();
     const gasLimit = await publicClient.estimateGas({
-      account: wallet.walletAddress,
+      account: walletAddress,
       to: secondAddress as Hex,
       value: amount,
       data: '0x',
-      ...feeOptions,
+      // ...feeOptions,
     });
 
-    const fee = gasPrice * gasLimit;
+    let value = amount - (gasLimit * maxFeePerGas * 15n) / 10n;
 
-    const feeWithPercent = BigInt(+addNumberPercentage(Number(fee), reversedFee).toFixed(0));
-    const value = amount - feeWithPercent;
+    if (network === 'eth') {
+      value = amount - gasLimit * maxFeePerGas;
+    }
+    if (network === 'optimism') {
+      value = amount - gasPrice * maxFeePerGas;
+    }
 
     if (value <= 0n) {
-      return {
-        status: 'passed',
-        message: `Fee of transaction [${getTrimmedLogsAmount(
-          decimalToInt({
-            amount: feeWithPercent,
-            decimals,
-          }),
-          tokenSymbol
-        )}] is bigger than current balance [${getTrimmedLogsAmount(intBalance, tokenSymbol)}]`,
-      };
+      value = amount;
     }
 
     logger.info(transferMsg);
