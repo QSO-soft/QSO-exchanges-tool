@@ -232,9 +232,12 @@ export const makeBinanceWithdraw = async (
     );
 
     const logsAmount = getTrimmedLogsAmount(amount, tokenToWithdraw);
-    logger.success(`[${logsAmount}] were send. We are waiting for the withdrawal from Binance, relax...`, {
-      ...logTemplate,
-    });
+    logger.success(
+      `[${logsAmount}] were send in ${binanceWithdrawNetwork}. We are waiting for the withdrawal from Binance, relax...`,
+      {
+        ...logTemplate,
+      }
+    );
 
     let currentBalance = await client.getNativeOrContractBalance(isNativeTokenToWithdraw, tokenContractInfo);
 

@@ -238,9 +238,12 @@ export class Okx {
       }
 
       const logsAmount = getTrimmedLogsAmount(+amount, token);
-      this.logger?.success(`${logsAmount} were send. We are waiting for the withdrawal from OKX, relax...`, {
-        ...logTemplate,
-      });
+      this.logger?.success(
+        `${logsAmount} were send in ${network}. We are waiting for the withdrawal from OKX, relax...`,
+        {
+          ...logTemplate,
+        }
+      );
 
       return {
         id: res.id,

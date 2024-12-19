@@ -1,12 +1,7 @@
 // Описание роута:
 // Базовый роут, который предназначен для запуска, после деплоя кошелька для набива транзакций и контрактов
 
-import {
-  GroupSettings,
-  NumberRange,
-  RouteSettings,
-  UserModuleConfig,
-} from '../../../types';
+import { GroupSettings, NumberRange, RouteSettings, UserModuleConfig } from '../../../types';
 
 // ====================== MODULES ======================
 // Из всех модулей, возьмёт только 1 рандомный
@@ -15,7 +10,43 @@ const countModules = [0, 0] as NumberRange;
 
 const groupSettings: GroupSettings = {};
 
-const modules: UserModuleConfig[] = [];
+const modules: UserModuleConfig[] = [
+  {
+    moduleName: 'binance-withdraw',
+    count: [1, 1],
+    indexGroup: 0,
+
+    // Сеть из которой нужно делать вывод с Binance. bsc | opBNB | polygon
+    binanceWithdrawNetwork: 'base',
+
+    // При рандомных сетях будет браться нативный токен сети
+    tokenToWithdraw: 'ZRO',
+
+    // При указании данного поля сеть для вывода будет выбрана рандомно из списка
+    // Работает только, если useUsd = true
+    randomBinanceWithdrawNetworks: ['base', 'optimism'],
+
+    // Сумма в диапазоне ОТ и ДО, которая будет выведена с Binance в токене, который указан в tokenToWithdraw
+    minAndMaxAmount: [11, 12],
+
+    // Если баланс токена в tokenToWithdraw будет ниже этого значения, только тогда будет авто-пополнение
+    minTokenBalance: 10,
+
+    waitTime: 120,
+
+    // Где именно смотреть баланс minNativeBalance
+    // minNativeBalanceNetwork: 'bsc',
+
+    // Модуль будет выполнен, только, если высчитанный amount вместе с fee будет больше указанного значение
+    minAmount: 0,
+
+    // Ожидаемый баланс на кошельке, который должен быть после выполнения модуля. При указании данного параметра, minAndMaxAmount и minNativeBalance не учитываются
+    expectedBalance: [0, 0],
+
+    // Использовать ли USD как значения балансов, amount
+    useUsd: false,
+  },
+];
 
 // Выполнит скрипт на указанном количестве кошельков
 // То есть из 100 кошельков, которые попадут под фильтр - возьмёт в работу только первые

@@ -52,13 +52,18 @@ export const getRandomNetwork = async ({
     currentClient = getClientByNetwork(network, logger, wallet);
     const nativeToken = currentClient.chainData.nativeCurrency.symbol as Tokens;
 
-    const { tokenContractInfo, token, isNativeToken } = getContractData({
+    const {
+      tokenContractInfo,
+      isNativeToken,
+      token: resToken,
+    } = getContractData({
       nativeToken,
       network,
+      token,
     });
 
     currentNetwork = network;
-    currentToken = token;
+    currentToken = resToken;
     currentTokenContractInfo = tokenContractInfo;
     currentIsNativeToken = isNativeToken;
 
