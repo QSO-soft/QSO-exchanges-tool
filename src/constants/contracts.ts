@@ -4,7 +4,8 @@ import { defaultTokenAbi } from '../clients/abi';
 import {
   ArbitrumTokens,
   AvalancheTokens,
-  BaseTokens, BlastTokens,
+  BaseTokens,
+  BlastTokens,
   BnbTokens,
   CeloTokens,
   CoreTokens,
@@ -42,6 +43,11 @@ export const EVM_TOKEN_CONTRACTS: TokenContract[] = [
   {
     name: EvmTokens.USDC,
     address: getAddress('0x176211869cA2b568f2A7D4EE941E073a821EE1ff'),
+    abi: defaultTokenAbi,
+  },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
     abi: defaultTokenAbi,
   },
 ];
@@ -195,6 +201,11 @@ export const OPTIMISM_TOKEN_CONTRACTS: TokenContract[] = [
     address: getAddress('0x4200000000000000000000000000000000000042'),
     abi: defaultTokenAbi,
   },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
+    abi: defaultTokenAbi,
+  },
 ];
 export const POLYGON_TOKEN_CONTRACTS: TokenContract[] = [
   {
@@ -286,6 +297,11 @@ export const BASE_TOKEN_CONTRACTS: TokenContract[] = [
     address: getAddress('0xB6fe221Fe9EeF5aBa221c348bA20A1Bf5e73624c'),
     abi: defaultTokenAbi,
   },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
+    abi: defaultTokenAbi,
+  },
 ];
 export const ETH_TOKEN_CONTRACTS: TokenContract[] = [
   {
@@ -367,7 +383,6 @@ export const BLAST_TOKEN_CONTRACTS: TokenContract[] = [
     address: getAddress('0x4300000000000000000000000000000000000003'),
     abi: defaultTokenAbi,
   },
-
 ];
 export const SCROLL_TOKEN_CONTRACTS: TokenContract[] = [
   {

@@ -3,6 +3,7 @@ export enum EvmTokens {
   DAI = 'DAI',
   USDT = 'USDT',
   USDC = 'USDC',
+  ZRO = 'ZRO',
 }
 export enum EthTokens {
   ETH = 'ETH',
@@ -69,6 +70,7 @@ export enum OptimismTokens {
   DAI = 'DAI',
   OP = 'OP',
   RPL = 'RPL',
+  ZRO = 'ZRO',
 }
 export enum PolygonTokens {
   MATIC = 'MATIC',
@@ -93,6 +95,7 @@ export enum BaseTokens {
   WETH = 'WETH',
   DAI = 'DAI',
   rETH = 'rETH',
+  ZRO = 'ZRO',
 }
 export enum LineaTokens {
   ETH = 'ETH',
@@ -169,6 +172,7 @@ const ALL_TOKENS = [
   'rETH',
   'SIS',
   'ZRO',
+  'ZRC',
   'PEPE',
   '1INCH',
   'AAVE',
@@ -222,6 +226,7 @@ const ALL_TOKENS = [
   'SUN',
   'SUSHI',
   'TIA',
+  'TAIKO',
   'TON',
   'UNI',
   'VELO',
@@ -240,6 +245,10 @@ const ALL_TOKENS = [
   'KAVA',
   'XDAI',
   'USDB',
+  'EIGEN',
+  'SCR',
+  'PUFFER',
+  'ZRO',
 ] as const;
 
 export type Tokens = (typeof ALL_TOKENS)[number];
