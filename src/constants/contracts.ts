@@ -92,6 +92,11 @@ export const BNB_TOKEN_CONTRACTS: TokenContract[] = [
     address: getAddress('0xBf5140A22578168FD562DCcF235E5D43A02ce9B1'),
     abi: defaultTokenAbi,
   },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
+    abi: defaultTokenAbi,
+  },
 ];
 
 export const AVALANCHE_TOKEN_CONTRACTS: TokenContract[] = [
@@ -150,6 +155,11 @@ export const ARBITRUM_TOKEN_CONTRACTS: TokenContract[] = [
   {
     name: ArbitrumTokens.UNI,
     address: getAddress('0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0'),
+    abi: defaultTokenAbi,
+  },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
     abi: defaultTokenAbi,
   },
 ];
@@ -246,6 +256,11 @@ export const POLYGON_TOKEN_CONTRACTS: TokenContract[] = [
   {
     name: PolygonTokens.BUSD,
     address: getAddress('0xdAb529f40E671A1D4bF91361c21bf9f0C9712ab7'),
+    abi: defaultTokenAbi,
+  },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
     abi: defaultTokenAbi,
   },
 ];
@@ -364,6 +379,11 @@ export const LINEA_TOKEN_CONTRACTS: TokenContract[] = [
   {
     name: LineaTokens.UNI,
     address: getAddress('0x636B22bC471c955A8DB60f28D4795066a8201fa3'),
+    abi: defaultTokenAbi,
+  },
+  {
+    name: EvmTokens.ZRO,
+    address: getAddress('0x6985884C4392D348587B19cb9eAAf157F13271cd'),
     abi: defaultTokenAbi,
   },
 ];
