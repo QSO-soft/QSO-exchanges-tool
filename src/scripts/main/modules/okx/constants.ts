@@ -15,6 +15,7 @@ export const OKX_NETWORK_MAP: Record<OkxNetworks, string> = {
   celo: 'CELO-TOKEN',
   klay: 'Klaytn',
   aptos: 'Aptos',
+  solana: 'Solana',
 };
 
 export const OKX_FEE_NETWORK_MAP: Record<OkxNetworks, string> = {
@@ -32,4 +33,5 @@ export const OKX_FEE_NETWORK_MAP: Record<OkxNetworks, string> = {
   celo: 'CELO',
   klay: 'KLAY',
   aptos: 'APT',
+  solana: 'Solana',
 };

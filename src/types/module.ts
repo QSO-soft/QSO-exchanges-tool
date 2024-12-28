@@ -76,7 +76,7 @@ export interface ExtraModuleParams {
   randomBinanceWithdrawNetworks?: BinanceNetworks[];
 
   okxWithdrawNetwork?: OkxNetworks;
-  randomOkxWithdrawNetworks?: OkxNetworks[];
+  randomOkxWithdrawNetworks?: Exclude<OkxNetworks, 'solana'>[];
   okxWithdrawFees?: number;
   okxAccounts?: string[] | 'all';
   collectTokens?: Tokens[];

@@ -12,19 +12,39 @@ const groupSettings: GroupSettings = {};
 
 const modules: UserModuleConfig[] = [
   {
-    moduleName: 'okx-collect',
-
+    moduleName: 'okx-withdraw',
+    count: [1, 1],
     indexGroup: 0,
-  },
-  // {
-  //   moduleName: 'okx-withdraw',
-  //
-  //   indexGroup: 0,
-  // },
-  {
-    moduleName: 'balance-checker',
 
-    indexGroup: 0,
+    // Сеть из которой нужно делать вывод с Binance. bsc | opBNB | polygon
+    okxWithdrawNetwork: 'solana',
+
+    // При рандомных сетях будет браться нативный токен сети
+    tokenToWithdraw: 'SOL',
+
+    // При указании данного поля сеть для вывода будет выбрана рандомно из списка
+    // Работает только, если useUsd = true
+    randomOkxWithdrawNetworks: [],
+
+    // Сумма в диапазоне ОТ и ДО, которая будет выведена с Binance в токене, который указан в tokenToWithdraw
+    minAndMaxAmount: [0.05, 0.056],
+
+    // Если баланс токена в tokenToWithdraw будет ниже этого значения, только тогда будет авто-пополнение
+    minTokenBalance: 0.048,
+
+    waitTime: 60,
+
+    // Где именно смотреть баланс minNativeBalance
+    // minNativeBalanceNetwork: 'bsc',
+
+    // Модуль будет выполнен, только, если высчитанный amount вместе с fee будет больше указанного значение
+    minAmount: 0,
+
+    // Ожидаемый баланс на кошельке, который должен быть после выполнения модуля. При указании данного параметра, minAndMaxAmount и minNativeBalance не учитываются
+    expectedBalance: [0, 0],
+
+    // Использовать ли USD как значения балансов, amount
+    useUsd: false,
   },
 ];
 
@@ -39,7 +59,7 @@ const limitWalletsToUse = 0;
 // Вот это - [{ moduleName: 'starkVerse', count: [2,2] }, { moduleName: 'dmail', count: [2,2] }]
 // Превратится в это - [{moduleName: 'starkVerse', count: [1,1]}, {moduleName: 'starkVerse', count: [1,1]}, {moduleName: 'dmail', count: [1,1]}, {moduleName: 'dmail', count: [1,1]}]
 // А если вы указали в settings.shuffle.modules: true, тогда они еще перемешаются между собой.
-const splitModuleCount = false;
+const splitModuleCount = true;
 
 export const dev: RouteSettings = {
   modules,

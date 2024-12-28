@@ -34,7 +34,7 @@ export enum Networks {
   APTOS = 'aptos',
   STARKNET = 'starknet',
 
-  BLAST = 'blast'
+  BLAST = 'blast',
 }
 
 export const SUPPORTED_NETWORKS = [
@@ -60,7 +60,7 @@ export const SUPPORTED_NETWORKS = [
   'aptos',
   'holesky',
   'moonbeam',
-  'blast'
+  'blast',
 ] as const;
 export type SupportedNetworks = (typeof SUPPORTED_NETWORKS)[number];
 
@@ -77,7 +77,7 @@ export const BINANCE_NETWORKS = [
   'fantom',
   'celo',
   'klay',
-  'scroll'
+  'scroll',
 ] as const;
 
 export type BinanceNetworks = (typeof BINANCE_NETWORKS)[number];
@@ -97,6 +97,7 @@ export const OKX_NETWORKS = [
   'celo',
   'klay',
   'aptos',
+  'solana',
 ] as const;
 export type OkxNetworks = (typeof OKX_NETWORKS)[number];
 
